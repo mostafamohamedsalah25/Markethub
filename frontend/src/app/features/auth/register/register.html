@@ -1,0 +1,82 @@
+<div class="min-h-screen flex items-center justify-center bg-slate-50 p-6 font-inter py-12">
+  <div class="w-full max-w-lg">
+    <div class="text-center mb-8">
+      <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Create an Account</h1>
+      <p class="text-slate-500 mt-2">Join NexusCommerce to start buying or selling.</p>
+    </div>
+
+    <mat-card class="rounded-2xl shadow-lg border border-slate-200 !bg-white">
+      <mat-card-content class="!p-8">
+
+        <div *ngIf="errorMessage()" class="bg-red-50 text-red-700 p-4 rounded-lg mb-6 text-sm flex items-center gap-2 border border-red-100">
+          <mat-icon class="scale-75">error_outline</mat-icon>
+          {{ errorMessage() }}
+        </div>
+
+        <div *ngIf="successMessage()" class="bg-green-50 text-green-700 p-4 rounded-lg mb-6 text-sm flex items-center gap-2 border border-green-100">
+          <mat-icon class="scale-75">check_circle</mat-icon>
+          {{ successMessage() }}
+        </div>
+
+        <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="flex flex-col gap-3">
+
+          <div class="flex gap-4 w-full">
+            <mat-form-field appearance="outline" class="w-full">
+              <mat-label>Account Type</mat-label>
+              <mat-select formControlName="role">
+                <mat-option value="customer">Customer</mat-option>
+                <mat-option value="seller">Seller (Merchant)</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <mat-form-field appearance="outline" class="w-full" *ngIf="isSeller()">
+            <mat-label>Store Name</mat-label>
+            <input matInput formControlName="store_name" placeholder="e.g. Nexus Electronics">
+            <mat-icon matPrefix class="mr-2 text-slate-400">storefront</mat-icon>
+            <mat-error *ngIf="registerForm.get('store_name')?.hasError('required')">Store name is required for sellers</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Email Address</mat-label>
+            <input matInput type="email" formControlName="email">
+            <mat-error *ngIf="registerForm.get('email')?.hasError('required')">Email is required</mat-error>
+            <mat-error *ngIf="registerForm.get('email')?.hasError('email')">Invalid email format</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Phone Number (Optional)</mat-label>
+            <input matInput type="tel" formControlName="phone">
+            <mat-error *ngIf="registerForm.get('phone')?.hasError('pattern')">Invalid phone number</mat-error>
+          </mat-form-field>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <mat-form-field appearance="outline" class="w-full">
+              <mat-label>Password</mat-label>
+              <input matInput [type]="hidePassword() ? 'password' : 'text'" formControlName="password">
+              <button mat-icon-button matSuffix (click)="hidePassword.set(!hidePassword())" type="button" tabindex="-1">
+                <mat-icon>{{hidePassword() ? 'visibility_off' : 'visibility'}}</mat-icon>
+              </button>
+              <mat-error *ngIf="registerForm.get('password')?.hasError('minlength')">Min 8 characters required</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="w-full">
+              <mat-label>Confirm Password</mat-label>
+              <input matInput [type]="hidePassword() ? 'password' : 'text'" formControlName="password_confirm">
+              <mat-error *ngIf="registerForm.get('password_confirm')?.hasError('passwordMismatch')">Passwords do not match</mat-error>
+            </mat-form-field>
+          </div>
+
+          <button mat-flat-button color="primary" type="submit" class="!py-6 !text-base !rounded-lg mt-2" [disabled]="isLoading() || successMessage()">
+            <span *ngIf="!isLoading()">Create Account</span>
+            <mat-spinner *ngIf="isLoading()" diameter="24" color="accent"></mat-spinner>
+          </button>
+        </form>
+
+        <p class="text-center text-sm text-slate-500 mt-6">
+          Already have an account? <a routerLink="/auth/login" class="text-indigo-600 font-semibold hover:underline">Sign in</a>
+        </p>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

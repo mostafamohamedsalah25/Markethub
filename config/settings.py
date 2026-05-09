@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_filters',
     # 'django.contrib.sites',
     
     # Third party apps
@@ -45,6 +46,7 @@ INSTALLED_APPS = [
     
     # Local apps
     'users.apps.UsersConfig',
+    'products.apps.ProductsConfig',
 ]
 
 MIDDLEWARE = [
@@ -127,6 +129,9 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend',
+    ]
 }
 
 # Simple JWT Settings
@@ -165,6 +170,8 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 # CORS Settings
 # CORS_ALLOW_ALL_ORIGINS = True  # In production, specify origins
 CORS_ALLOWED_ORIGINS = [
+    "http://localhost:4200",
+    "http://127.0.0.1:4200",
     env('FRONTEND_URL', default="http://localhost:3000"),
 ]
 
