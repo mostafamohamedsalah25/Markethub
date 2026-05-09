@@ -18,7 +18,7 @@ export class AuthService {
   currentUser = signal<User | null>(null);
   isAuthenticated = signal<boolean>(false);
 
-  private readonly API_URL = `${environment.apiUrl}/users/auth`;
+  private readonly API_URL = `${environment.apiUrl}/auth`;
 
   login(credentials: any): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.API_URL}/login/`, credentials).pipe(
@@ -26,7 +26,7 @@ export class AuthService {
         if (response.data.access && response.data.refresh) {
           this.tokenService.setTokens(response.data.access, response.data.refresh);
           this.isAuthenticated.set(true);
-          this.loadUserProfile().subscribe(); 
+          this.loadUserProfile().subscribe();
         }
       }),
     );
