@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Observable, catchError, map, of, finalize, forkJoin } from 'rxjs';
@@ -24,6 +24,7 @@ export class HomeComponent implements OnInit {
   private categoryService = inject(CategoryService);
   private uiService = inject(UiService);
   private configService = inject(ConfigService);
+  private cdr = inject(ChangeDetectorRef);
 
   categories: Category[] = [];
   featuredProducts: Product[] = [];
@@ -42,9 +43,7 @@ export class HomeComponent implements OnInit {
     forkJoin({
       categories: this.categoryService.getCategories(),
       products: this.productService.getProducts({ ordering: '-created_at' })
-    }).pipe(
-      finalize(() => this.isLoading = false)
-    ).subscribe({
+    }).subscribe({
       next: (data: any) => {
         // Handle both flat array and paginated { results: [] } responses
         const cats = Array.isArray(data.categories) ? data.categories : (data.categories.results || []);
@@ -52,11 +51,14 @@ export class HomeComponent implements OnInit {
         
         this.categories = cats;
         this.featuredProducts = prods.slice(0, 8);
+        this.isLoading = false;
+        this.cdr.markForCheck();
       },
       error: (err) => {
         console.error('Error loading home data', err);
         this.error = 'Failed to load home content';
-        // Error is displayed via the template's error binding
+        this.isLoading = false;
+        this.cdr.markForCheck();
       }
     });
   }
@@ -81,3 +83,4 @@ export class HomeComponent implements OnInit {
     (event.target as HTMLImageElement).src = this.configService.catalogConfig.placeholders.productImage;
   }
 }
+

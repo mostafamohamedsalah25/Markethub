@@ -13,7 +13,13 @@
       <h1 class="text-3xl font-bold text-on-surface mb-2">
         {{ selectedCategory ? (selectedCategory | titlecase) : 'All Products' }}
       </h1>
-      <p class="text-on-surface-variant">Showing {{ products.length }} products</p>
+      <p class="text-on-surface-variant">
+        @if (totalCount > 0) {
+          Showing {{ showingFrom }} - {{ showingTo }} of {{ totalCount }} products
+        } @else if (!isLoading) {
+          No products found
+        }
+      </p>
     </div>
 
     <div class="flex items-center gap-4 w-full md:w-auto">
@@ -291,21 +297,68 @@
         </div>
       }
 
-      <!-- Pagination / Load More -->
-      @if (products.length > 0 && hasMoreProducts && !hasError) {
-        <div class="mt-12 flex justify-center">
-          <button 
-            (click)="loadMore()" 
-            [disabled]="isLoading"
-            class="border-2 border-primary text-primary px-8 py-3 rounded-lg font-label-md hover:bg-primary/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-          >
-            @if (isLoading) {
-              <span class="material-symbols-outlined animate-spin">progress_activity</span>
-              Loading...
-            } @else {
-              Load More Products
+      <!-- Pagination -->
+      @if (totalPages > 1 && !hasError) {
+        <div class="mt-12 flex flex-col sm:flex-row items-center justify-between gap-6">
+          
+          <!-- Page Size Selector -->
+          <div class="flex items-center gap-2 text-sm text-on-surface-variant">
+            <span>Show</span>
+            <select 
+              [ngModel]="pageSize"
+              (ngModelChange)="onPageSizeChange($event)"
+              class="bg-surface-container rounded-lg border-none px-3 py-2 text-sm focus:ring-2 focus:ring-primary outline-none cursor-pointer text-on-surface"
+            >
+              @for (size of pageSizeOptions; track size) {
+                <option [ngValue]="size">{{ size }}</option>
+              }
+            </select>
+            <span>per page</span>
+          </div>
+
+          <!-- Page Numbers -->
+          <nav class="flex items-center gap-1">
+            <!-- Previous -->
+            <button 
+              (click)="goToPage(page - 1)"
+              [disabled]="page === 1"
+              class="px-3 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed hover:bg-surface-container text-on-surface-variant"
+            >
+              <span class="material-symbols-outlined text-sm">chevron_left</span>
+            </button>
+
+            @for (p of getVisiblePages(); track $index) {
+              @if (p === -1) {
+                <span class="px-2 py-2 text-on-surface-variant text-sm">…</span>
+              } @else {
+                <button 
+                  (click)="goToPage(p)"
+                  [class.bg-primary]="p === page"
+                  [class.text-on-primary]="p === page"
+                  [class.shadow-md]="p === page"
+                  [class.text-on-surface-variant]="p !== page"
+                  [class.hover:bg-surface-container]="p !== page"
+                  class="w-10 h-10 rounded-lg text-sm font-medium transition-all"
+                >
+                  {{ p }}
+                </button>
+              }
             }
-          </button>
+
+            <!-- Next -->
+            <button 
+              (click)="goToPage(page + 1)"
+              [disabled]="page === totalPages"
+              class="px-3 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed hover:bg-surface-container text-on-surface-variant"
+            >
+              <span class="material-symbols-outlined text-sm">chevron_right</span>
+            </button>
+          </nav>
+
+          <!-- Showing text (mobile) -->
+          <p class="text-sm text-on-surface-variant">
+            Page {{ page }} of {{ totalPages }}
+          </p>
         </div>
       }
 

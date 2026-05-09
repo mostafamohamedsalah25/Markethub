@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -36,19 +36,19 @@ export class CatalogComponent implements OnInit, OnDestroy {
   private categoryService = inject(CategoryService);
   private uiService = inject(UiService);
   private configService = inject(ConfigService);
+  private cdr = inject(ChangeDetectorRef);
 
   // Filter state
   searchTerm = '';
   selectedCategory: string | null = null;
   minPrice: number | null = null;
   maxPrice: number | null = null;
-  availability: boolean | null = null;  // true = in-stock only
-  ordering = this.configService.catalogConfig.defaultOrdering;  // default sort
+  availability: boolean | null = null;
+  ordering = this.configService.catalogConfig.defaultOrdering;
 
   // UI state
   products: Product[] = [];
   categories: Category[] = [];
-  totalCount = 0;
   isLoading = false;
   hasError = false;
   viewMode: 'grid' | 'list' = 'grid';
@@ -56,12 +56,22 @@ export class CatalogComponent implements OnInit, OnDestroy {
   // Pagination
   page = 1;
   pageSize = this.configService.catalogConfig.defaultPageSize;
-  hasMoreProducts = true;
+  totalCount = 0;
+  totalPages = 0;
+  readonly pageSizeOptions = [12, 24, 48];
 
   // Subscriptions
   private searchSubject = new Subject<string>();
   private routeSub!: Subscription;
   private searchSub!: Subscription;
+
+  // Computed helpers for "Showing X - Y of Z"
+  get showingFrom(): number {
+    return this.totalCount === 0 ? 0 : (this.page - 1) * this.pageSize + 1;
+  }
+  get showingTo(): number {
+    return Math.min(this.page * this.pageSize, this.totalCount);
+  }
 
   ngOnInit(): void {
     this.fetchCategories();
@@ -81,6 +91,7 @@ export class CatalogComponent implements OnInit, OnDestroy {
       this.availability = params['availability'] === 'true' ? true : null;
       this.ordering = params['ordering'] || '-created_at';
       this.page = params['page'] ? +params['page'] : 1;
+      this.pageSize = params['page_size'] ? +params['page_size'] : this.configService.catalogConfig.defaultPageSize;
 
       this.fetchProducts();
     });
@@ -95,6 +106,7 @@ export class CatalogComponent implements OnInit, OnDestroy {
     this.categoryService.getCategories().subscribe({
       next: (res: any) => {
         this.categories = Array.isArray(res) ? res : (res.results || []);
+        this.cdr.markForCheck();
       },
       error: (err: any) => console.error('Failed to load categories', err)
     });
@@ -118,21 +130,24 @@ export class CatalogComponent implements OnInit, OnDestroy {
 
     this.productService.getProducts(params).subscribe({
       next: (res: any) => {
-        const newProducts = Array.isArray(res) ? res : (res.results || []);
-        
-        if (this.page === 1) {
-          this.products = newProducts;
+        if (Array.isArray(res)) {
+          // Flat array response (no pagination from backend)
+          this.products = res;
+          this.totalCount = res.length;
         } else {
-          this.products = [...this.products, ...newProducts];
+          // DRF paginated response: { count, next, previous, results }
+          this.products = res.results || [];
+          this.totalCount = res.count || 0;
         }
-
-        this.hasMoreProducts = newProducts.length === this.pageSize;
+        this.totalPages = Math.ceil(this.totalCount / this.pageSize);
         this.isLoading = false;
+        this.cdr.markForCheck();
       },
       error: (err: any) => {
         console.error('Failed to load products', err);
         this.hasError = true;
         this.isLoading = false;
+        this.cdr.markForCheck();
       }
     });
   }
@@ -168,8 +183,54 @@ export class CatalogComponent implements OnInit, OnDestroy {
     this.router.navigate(['/catalog']);
   }
 
-  loadMore(): void {
-    this.updateUrlParams({ page: this.page + 1 });
+  // --- Pagination ---
+
+  goToPage(pageNum: number): void {
+    if (pageNum < 1 || pageNum > this.totalPages || pageNum === this.page) return;
+    this.updateUrlParams({ page: pageNum });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  onPageSizeChange(newSize: number): void {
+    this.updateUrlParams({ page_size: newSize, page: null });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  /**
+   * Returns an array of page numbers and ellipsis markers for the pagination bar.
+   * Always shows first, last, current, and neighbors. Uses -1 for ellipsis.
+   */
+  getVisiblePages(): number[] {
+    const total = this.totalPages;
+    if (total <= 7) {
+      return Array.from({ length: total }, (_, i) => i + 1);
+    }
+
+    const pages: number[] = [];
+    const current = this.page;
+
+    // Always show page 1
+    pages.push(1);
+
+    if (current > 3) {
+      pages.push(-1); // left ellipsis
+    }
+
+    // Pages around current
+    const start = Math.max(2, current - 1);
+    const end = Math.min(total - 1, current + 1);
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+
+    if (current < total - 2) {
+      pages.push(-1); // right ellipsis
+    }
+
+    // Always show last page
+    pages.push(total);
+
+    return pages;
   }
 
   showComingSoon(feature: string): void {
@@ -188,3 +249,4 @@ export class CatalogComponent implements OnInit, OnDestroy {
     (event.target as HTMLImageElement).src = this.configService.catalogConfig.placeholders.productImage;
   }
 }
+

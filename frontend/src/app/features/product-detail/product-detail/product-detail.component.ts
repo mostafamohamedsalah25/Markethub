@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
@@ -25,6 +25,7 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
   private categoryService = inject(CategoryService);
   private uiService = inject(UiService);
   private configService = inject(ConfigService);
+  private cdr = inject(ChangeDetectorRef);
   private primaryImagePipe = new PrimaryImagePipe();
 
   product: Product | null = null;
@@ -72,6 +73,7 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
         this.selectedImageUrl = this.primaryImagePipe.transform(product.images);
         this.resolveCategory(product.category);
         this.isLoading = false;
+        this.cdr.markForCheck();
       },
       error: (err: any) => {
         if (err.status === 404) {
@@ -80,6 +82,7 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
           this.hasError = true;
         }
         this.isLoading = false;
+        this.cdr.markForCheck();
       }
     });
   }
@@ -94,6 +97,7 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
           this.categorySlug = cat.slug;
           this.loadRelatedProducts(cat.slug);
         }
+        this.cdr.markForCheck();
       }
     });
   }
@@ -105,6 +109,7 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
         this.relatedProducts = products
           .filter((p: Product) => p.id !== this.product?.id)
           .slice(0, 4);
+        this.cdr.markForCheck();
       }
     });
   }
