@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -24,7 +25,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             )
 
         data['role'] = self.user.role
-        data['user_id'] = self.user.id
+        data['user_id'] = str(self.user.id)
         return data
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -39,6 +40,11 @@ class RegisterSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         role = attrs.get('role', 'customer')
         store_name = attrs.get('store_name')
+
+        # 0. Normalize phone: convert empty string to None for unique constraint
+        phone = attrs.get('phone')
+        if not phone or phone.strip() == '':
+            attrs['phone'] = None
 
         # 1. Password confirmation check
         if attrs['password'] != attrs['password_confirm']:
@@ -63,7 +69,8 @@ class RegisterSerializer(serializers.ModelSerializer):
             email=validated_data['email'],
             password=validated_data['password'],
             phone=validated_data.get('phone'),
-            role=role
+            role=role,
+            is_verified=True # Auto-verify for easy testing
         )
 
         # 3. Create SellerProfile only for sellers

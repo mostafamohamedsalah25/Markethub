@@ -2,10 +2,11 @@ import { Component, Input, HostBinding, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Product } from '../../../core/models/product.model';
-import { UiService } from '../../../core/services/ui.service';
 import { ConfigService } from '../../../core/services/config';
 import { PrimaryImagePipe } from '../../../shared/pipes/primary-image-pipe';
 import { StarRatingComponent } from '../../../shared/components/star-rating/star-rating';
+import { CartActionsService } from '../../../core/services/cart-actions.service';
+import { UiService } from '../../../core/services/ui.service';
 
 @Component({
   selector: 'app-product-card',
@@ -16,6 +17,7 @@ import { StarRatingComponent } from '../../../shared/components/star-rating/star
 })
 export class ProductCardComponent {
   @Input({ required: true }) product!: Product;
+  private cartActions = inject(CartActionsService);
   private uiService = inject(UiService);
   private configService = inject(ConfigService);
 
@@ -32,11 +34,13 @@ export class ProductCardComponent {
 
   addToCart(event: Event): void {
     event.stopPropagation();
-    this.uiService.showComingSoon('Cart');
+    event.preventDefault();
+    this.cartActions.addToCart(this.product);
   }
 
   toggleWishlist(event: Event): void {
     event.stopPropagation();
+    event.preventDefault();
     this.uiService.showComingSoon('Wishlist');
   }
 

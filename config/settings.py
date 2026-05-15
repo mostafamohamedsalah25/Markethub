@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     # Local apps
     'users.apps.UsersConfig',
     'products.apps.ProductsConfig',
+    'orders.apps.OrdersConfig',
 ]
 
 MIDDLEWARE = [
@@ -136,7 +137,7 @@ REST_FRAMEWORK = {
 
 # Simple JWT Settings
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
@@ -159,7 +160,7 @@ CELERY_TASK_ALWAYS_EAGER = False
 CELERY_TASK_EAGER_PROPAGATES = False  # Crucial: prevents silent failures in eager mode
 
 # Email Settings
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_BACKEND = env('EMAIL_BACKEND', default='django.core.mail.backends.smtp.EmailBackend')
 EMAIL_HOST = env('EMAIL_HOST')
 EMAIL_PORT = env.int('EMAIL_PORT')
 EMAIL_USE_TLS = env.bool('EMAIL_USE_TLS')

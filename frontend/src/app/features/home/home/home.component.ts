@@ -8,6 +8,7 @@ import { Product } from '../../../core/models/product.model';
 import { Category } from '../../../core/models/category.model';
 import { ProductCardComponent } from '../../../shared/components/product-card/product-card.component';
 import { UiService } from '../../../core/services/ui.service';
+import { CartActionsService } from '../../../core/services/cart-actions.service';
 import { ConfigService } from '../../../core/services/config';
 import { NewsletterComponent } from '../../../shared/components/newsletter/newsletter.component';
 import { PrimaryImagePipe } from '../../../shared/pipes/primary-image-pipe';
@@ -23,6 +24,7 @@ export class HomeComponent implements OnInit {
   private productService = inject(ProductService);
   private categoryService = inject(CategoryService);
   private uiService = inject(UiService);
+  private cartActions = inject(CartActionsService);
   private configService = inject(ConfigService);
   private cdr = inject(ChangeDetectorRef);
 
@@ -64,8 +66,9 @@ export class HomeComponent implements OnInit {
   }
 
   addToCart(event: Event, product: Product): void {
-    event.stopPropagation(); // prevent card navigation
-    this.uiService.showComingSoon('Cart');
+    event.stopPropagation();
+    event.preventDefault();
+    this.cartActions.addToCart(product);
   }
 
   showComingSoon(feature: string): void {

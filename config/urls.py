@@ -11,6 +11,7 @@ urlpatterns = [
     # path('accounts/', include('allauth.urls')),
 
     path('api/products/', include('products.urls')),
+    path('api/orders/', include('orders.urls')),
 ]
 
 if settings.DEBUG:

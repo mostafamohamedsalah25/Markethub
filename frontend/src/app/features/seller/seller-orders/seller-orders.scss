@@ -1,0 +1,42 @@
+.status-pending {
+  background-color: #fef3c7;
+  color: #92400e;
+  border-color: #fcd34d;
+}
+
+.status-accepted {
+  background-color: #dbeafe;
+  color: #1e40af;
+  border-color: #93c5fd;
+}
+
+.status-rejected {
+  background-color: #fee2e2;
+  color: #991b1b;
+  border-color: #fca5a5;
+}
+
+.status-shipped {
+  background-color: #e0e7ff;
+  color: #3730a3;
+  border-color: #a5b4fc;
+}
+
+.status-delivered {
+  background-color: #d1fae5;
+  color: #065f46;
+  border-color: #6ee7b7;
+}
+
+.status-cancelled {
+  background-color: #f3f4f6;
+  color: #374151;
+  border-color: #d1d5db;
+}
+
+.status-select {
+  border-width: 1px;
+  border-style: solid;
+  font-weight: 600;
+  text-transform: capitalize;
+}

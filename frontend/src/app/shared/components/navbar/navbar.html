@@ -39,8 +39,8 @@
           Dashboard
         </a>
 
-        <button mat-icon-button class="text-slate-600 hover:bg-slate-100" (click)="showComingSoon('Cart')">
-          <mat-icon matBadge="2" matBadgeColor="warn" matBadgeSize="small">shopping_cart</mat-icon>
+        <button mat-icon-button class="text-slate-600 hover:bg-slate-100" routerLink="/cart">
+          <mat-icon matBadgeColor="warn" matBadgeSize="small">shopping_cart</mat-icon>
         </button>
 
         <button mat-icon-button [matMenuTriggerFor]="userMenu" class="text-slate-600 hover:bg-slate-100 border border-slate-200">
@@ -52,11 +52,11 @@
             <p class="text-sm font-bold text-slate-900 truncate">{{ currentUser()?.email }}</p>
             <p class="text-xs text-slate-500 uppercase tracking-wider mt-1">{{ currentUser()?.role }}</p>
           </div>
-          <button mat-menu-item (click)="showComingSoon('Profile')">
+          <button mat-menu-item routerLink="/profile">
             <mat-icon class="text-slate-500">person</mat-icon>
             <span>My Profile</span>
           </button>
-          <button mat-menu-item (click)="showComingSoon('Orders')">
+          <button mat-menu-item routerLink="/my-orders">
             <mat-icon class="text-slate-500">receipt_long</mat-icon>
             <span>My Orders</span>
           </button>

@@ -9,6 +9,7 @@ import { Product } from '../models/product.model';
 })
 export class ProductService {
   private apiUrl = `${environment.apiUrl}/products/products/`;
+  private sellerApiUrl = `${environment.apiUrl}/products/seller/my-products/`;
 
   constructor(private http: HttpClient) {}
 
@@ -21,7 +22,7 @@ export class ProductService {
     search?: string;
     page?: number;
     page_size?: number;
-  }): Observable<Product[]> {
+  }): Observable<Product[] | { results: Product[] }> {
     let httpParams = new HttpParams();
 
     if (params) {
@@ -32,10 +33,22 @@ export class ProductService {
       });
     }
 
-    return this.http.get<Product[]>(this.apiUrl, { params: httpParams });
+    return this.http.get<Product[] | { results: Product[] }>(this.apiUrl, { params: httpParams });
   }
 
   getProductBySlug(slug: string): Observable<Product> {
     return this.http.get<Product>(`${this.apiUrl}${slug}/`);
+  }
+
+  getSellerProducts(): Observable<Product[] | { results: Product[] }> {
+    return this.http.get<Product[] | { results: Product[] }>(this.sellerApiUrl);
+  }
+
+  createProduct(productData: FormData): Observable<Product> {
+    return this.http.post<Product>(this.sellerApiUrl, productData);
+  }
+
+  deleteProduct(slug: string): Observable<unknown> {
+    return this.http.delete(`${this.sellerApiUrl}${slug}/`);
   }
 }

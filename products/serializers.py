@@ -75,8 +75,15 @@ class ProductSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         uploaded_images = validated_data.pop('uploaded_images', [])
-        # Seller يتم استخراجه من الـ Request في الـ View
-        seller_profile = self.context['request'].user.seller_profile
+        user = self.context['request'].user
+        
+        if not hasattr(user, 'seller_profile'):
+            from users.models import SellerProfile
+            SellerProfile.objects.create(user=user, store_name=f"{user.role.capitalize()} Store")
+            
+        seller_profile = user.seller_profile
+        # FormData may send is_active as empty string → False; always publish new products
+        validated_data['is_active'] = True
         product = Product.objects.create(seller=seller_profile, **validated_data)
 
         for index, image in enumerate(uploaded_images):

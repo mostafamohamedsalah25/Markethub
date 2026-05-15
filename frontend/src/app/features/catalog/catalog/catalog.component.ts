@@ -10,6 +10,7 @@ import { CategoryService } from '../../../core/services/category.service';
 import { Product } from '../../../core/models/product.model';
 import { Category } from '../../../core/models/category.model';
 import { UiService } from '../../../core/services/ui.service';
+import { CartActionsService } from '../../../core/services/cart-actions.service';
 import { ConfigService } from '../../../core/services/config';
 import { PrimaryImagePipe } from '../../../shared/pipes/primary-image-pipe';
 import { StarRatingComponent } from '../../../shared/components/star-rating/star-rating';
@@ -35,6 +36,7 @@ export class CatalogComponent implements OnInit, OnDestroy {
   private productService = inject(ProductService);
   private categoryService = inject(CategoryService);
   private uiService = inject(UiService);
+  private cartActions = inject(CartActionsService);
   private configService = inject(ConfigService);
   private cdr = inject(ChangeDetectorRef);
 
@@ -52,6 +54,7 @@ export class CatalogComponent implements OnInit, OnDestroy {
   isLoading = false;
   hasError = false;
   viewMode: 'grid' | 'list' = 'grid';
+  catalogView: 'all' | 'categories' = 'all';
 
   // Pagination
   page = 1;
@@ -84,6 +87,7 @@ export class CatalogComponent implements OnInit, OnDestroy {
     });
 
     this.routeSub = this.route.queryParams.subscribe(params => {
+      this.catalogView = params['view'] === 'categories' ? 'categories' : 'all';
       this.searchTerm = params['search'] || '';
       this.selectedCategory = params['category'] || null;
       this.minPrice = params['min_price'] ? +params['min_price'] : null;
@@ -93,8 +97,24 @@ export class CatalogComponent implements OnInit, OnDestroy {
       this.page = params['page'] ? +params['page'] : 1;
       this.pageSize = params['page_size'] ? +params['page_size'] : this.configService.catalogConfig.defaultPageSize;
 
-      this.fetchProducts();
+      if (this.catalogView === 'all') {
+        this.fetchProducts();
+      } else {
+        this.isLoading = false;
+        this.products = [];
+      }
+      this.cdr.markForCheck();
     });
+  }
+
+  addToCart(event: Event, product: Product): void {
+    event.stopPropagation();
+    event.preventDefault();
+    this.cartActions.addToCart(product);
+  }
+
+  browseCategory(slug: string): void {
+    this.router.navigate(['/catalog'], { queryParams: { view: 'all', category: slug } });
   }
 
   ngOnDestroy(): void {

@@ -13,6 +13,8 @@ class SellerProductViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
+        if user.role == 'admin':
+            return Product.objects.prefetch_related('images').order_by('-created_at')
         if not hasattr(user, 'seller_profile'):
             return Product.objects.none()
         return Product.objects.filter(seller=user.seller_profile).prefetch_related('images').order_by('-created_at')

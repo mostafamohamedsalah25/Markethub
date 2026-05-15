@@ -1,4 +1,4 @@
-<div class="max-w-7xl mx-auto px-6 py-12">
+﻿<div class="max-w-7xl mx-auto px-6 py-12">
   
   <!-- Breadcrumb -->
   <div class="text-sm text-on-surface-variant mb-6">
@@ -174,7 +174,32 @@
 
     </aside>
 
-    <!-- Main Content Area -->
+    @if (catalogView === 'categories') {
+      <div class="flex-1">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          @for (cat of categories; track cat.id) {
+            <button
+              (click)="browseCategory(cat.slug)"
+              class="group text-left p-6 bg-surface-container rounded-2xl border border-surface-container-high hover:border-primary hover:shadow-md transition-all"
+            >
+              <div class="aspect-video rounded-xl overflow-hidden bg-surface-container-high mb-4">
+                <img
+                  [src]="cat.image || 'https://placehold.co/600x400/e2e8f0/475569?text=Category'"
+                  (error)="onImageError($event)"
+                  [alt]="cat.name"
+                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+              </div>
+              <h3 class="text-xl font-bold text-on-surface group-hover:text-primary">{{ cat.name }}</h3>
+              <p class="text-sm text-on-surface-variant mt-1">Browse products â†’</p>
+            </button>
+          }
+        </div>
+        @if (categories.length === 0) {
+          <p class="text-center text-on-surface-variant py-12">No categories available.</p>
+        }
+      </div>
+    } @else {
     <div class="flex-1">
       
       <!-- Error State -->
@@ -253,7 +278,7 @@
                 </div>
 
                 <div class="flex items-center gap-4 mt-6">
-                  <button (click)="showComingSoon('Cart')" [disabled]="product.stock === 0" class="bg-primary text-on-primary px-8 py-3 rounded-lg font-label-md hover:opacity-90 transition-all active:scale-95 shadow-lg shadow-primary/20 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                  <button (click)="addToCart($event, product)" [disabled]="product.stock === 0" class="bg-primary text-on-primary px-8 py-3 rounded-lg font-label-md hover:opacity-90 transition-all active:scale-95 shadow-lg shadow-primary/20 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
                     <span class="material-symbols-outlined text-sm">shopping_cart</span>
                     Add to Cart
                   </button>
@@ -329,7 +354,7 @@
 
             @for (p of getVisiblePages(); track $index) {
               @if (p === -1) {
-                <span class="px-2 py-2 text-on-surface-variant text-sm">…</span>
+                <span class="px-2 py-2 text-on-surface-variant text-sm">â€¦</span>
               } @else {
                 <button 
                   (click)="goToPage(p)"
@@ -363,5 +388,8 @@
       }
 
     </div>
+    }
   </div>
 </div>
+
+
