@@ -73,34 +73,65 @@ export const routes: Routes = [
   {
     path: 'seller',
     canActivate: [roleGuard(['seller', 'admin'])],
-    loadComponent: () => import('./features/admin/admin-dashboard/admin-dashboard').then(m => m.AdminDashboardComponent),
+    loadComponent: () =>
+      import('./features/admin/admin-dashboard/admin-dashboard').then((m) => m.AdminDashboardComponent),
     children: [
+      { path: '', pathMatch: 'full', redirectTo: 'overview' },
+      {
+        path: 'overview',
+        loadComponent: () =>
+          import('./features/seller/seller-overview/seller-overview').then((m) => m.SellerOverviewComponent),
+      },
       {
         path: 'products',
-        loadComponent: () => import('./features/seller/seller-products/seller-products').then(m => m.SellerProductsComponent)
+        loadComponent: () =>
+          import('./features/seller/seller-products/seller-products').then((m) => m.SellerProductsComponent),
       },
       {
         path: 'orders',
-        loadComponent: () => import('./features/seller/seller-orders/seller-orders').then(m => m.SellerOrdersComponent)
+        loadComponent: () =>
+          import('./features/seller/seller-orders/seller-orders').then((m) => m.SellerOrdersComponent),
       },
-      { path: '', redirectTo: 'products', pathMatch: 'full' }
-    ]
+      {
+        path: 'revenue',
+        loadComponent: () =>
+          import('./features/seller/seller-revenue/seller-revenue').then((m) => m.SellerRevenueComponent),
+      },
+    ],
   },
   {
     path: 'admin',
     canActivate: [roleGuard(['admin'])],
-    loadComponent: () => import('./features/admin/admin-dashboard/admin-dashboard').then(m => m.AdminDashboardComponent),
+    loadComponent: () =>
+      import('./features/admin/admin-dashboard/admin-dashboard').then((m) => m.AdminDashboardComponent),
     children: [
+      { path: '', pathMatch: 'full', redirectTo: 'overview' },
+      {
+        path: 'overview',
+        loadComponent: () =>
+          import('./features/admin/admin-overview/admin-overview').then((m) => m.AdminOverviewComponent),
+      },
       {
         path: 'products',
-        loadComponent: () => import('./features/seller/seller-products/seller-products').then(m => m.SellerProductsComponent)
+        loadComponent: () =>
+          import('./features/seller/seller-products/seller-products').then((m) => m.SellerProductsComponent),
       },
       {
         path: 'orders',
-        loadComponent: () => import('./features/seller/seller-orders/seller-orders').then(m => m.SellerOrdersComponent)
+        loadComponent: () =>
+          import('./features/seller/seller-orders/seller-orders').then((m) => m.SellerOrdersComponent),
       },
-      { path: '', redirectTo: 'products', pathMatch: 'full' }
-    ]
+      {
+        path: 'promos',
+        loadComponent: () =>
+          import('./features/admin/admin-promos/admin-promos').then((m) => m.AdminPromosComponent),
+      },
+      {
+        path: 'payments',
+        loadComponent: () =>
+          import('./features/admin/admin-payments/admin-payments').then((m) => m.AdminPaymentsComponent),
+      },
+    ],
   },
 
   // Fallback Route

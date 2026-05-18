@@ -1,63 +1,97 @@
-<div class="container mx-auto px-4 py-8 max-w-7xl">
-  <h1 class="text-3xl font-bold mb-8 text-gray-800">Store Orders</h1>
-
-  <div *ngIf="loading" class="flex justify-center py-12">
-    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+<div class="max-w-7xl mx-auto px-4 py-6">
+  <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-900">
+        {{ isAdmin() ? 'Orders' : 'Store orders' }}
+      </h1>
+      <p class="text-slate-600 text-sm mt-1">
+        {{ isAdmin() ? 'All marketplace orders and fulfillment' : 'Customer orders for your store' }}
+      </p>
+    </div>
+    <button
+      type="button"
+      class="inline-flex items-center gap-2 text-sm text-indigo-600 font-medium hover:underline"
+      (click)="load()"
+      [disabled]="loading()"
+    >
+      <mat-icon class="!text-lg">refresh</mat-icon>
+      Refresh
+    </button>
   </div>
 
-  <div *ngIf="!loading && orders.length === 0" class="text-center py-12 bg-gray-50 rounded-lg">
-    <svg class="mx-auto h-16 w-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-    </svg>
-    <h3 class="mt-4 text-xl font-medium text-gray-900">No orders received yet</h3>
-    <p class="mt-2 text-gray-500">When customers buy your products, they will appear here.</p>
-  </div>
+  @if (loading()) {
+    <div class="flex justify-center py-20">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
+  } @else if (orders().length === 0) {
+    <div class="rounded-xl border border-dashed border-slate-200 bg-white p-12 text-center text-slate-600">
+      <mat-icon class="!text-5xl !w-auto !h-auto text-slate-300 mb-2">receipt_long</mat-icon>
+      <p>No orders to show yet.</p>
+    </div>
+  } @else {
+    <div class="rounded-xl border border-slate-200 bg-white overflow-x-auto shadow-sm">
+      <table mat-table [dataSource]="orders()" class="w-full seller-orders-table">
+        <ng-container matColumnDef="id">
+          <th mat-header-cell *matHeaderCellDef>ID</th>
+          <td mat-cell *matCellDef="let o">#{{ o.id }}</td>
+        </ng-container>
 
-  <div *ngIf="!loading && orders.length > 0" class="overflow-x-auto bg-white rounded-lg shadow border border-gray-200">
-    <table class="min-w-full divide-y divide-gray-200">
-      <thead class="bg-gray-50">
-        <tr>
-          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
-          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer Info</th>
-          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Items</th>
-          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-        </tr>
-      </thead>
-      <tbody class="bg-white divide-y divide-gray-200">
-        <tr *ngFor="let order of orders" class="hover:bg-gray-50">
-          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-            #{{ order.id }}
+        <ng-container matColumnDef="seller">
+          <th mat-header-cell *matHeaderCellDef>Seller</th>
+          <td mat-cell *matCellDef="let o">{{ o.seller_name }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="customer">
+          <th mat-header-cell *matHeaderCellDef>Customer</th>
+          <td mat-cell *matCellDef="let o">
+            <div class="font-medium text-slate-900">{{ o.buyer_email }}</div>
+            <div class="text-xs text-slate-500">{{ o.contact_phone }}</div>
+            <div class="text-xs text-slate-500 max-w-xs truncate">{{ o.shipping_address }}</div>
           </td>
-          <td class="px-6 py-4 text-sm text-gray-500">
-            <p class="font-medium text-gray-900">{{ order.buyer_email }}</p>
-            <p class="text-xs">{{ order.contact_phone }}</p>
-            <p class="text-xs truncate max-w-xs">{{ order.shipping_address }}</p>
+        </ng-container>
+
+        <ng-container matColumnDef="items">
+          <th mat-header-cell *matHeaderCellDef>Items</th>
+          <td mat-cell *matCellDef="let o" class="max-w-[220px] text-sm text-slate-600">
+            {{ itemsSummary(o) }}
           </td>
-          <td class="px-6 py-4 text-sm text-gray-500">
-            <ul class="list-disc pl-4">
-              <li *ngFor="let item of order.items">
-                {{ item.quantity }}x {{ item.product_name }}
-              </li>
-            </ul>
+        </ng-container>
+
+        <ng-container matColumnDef="total">
+          <th mat-header-cell *matHeaderCellDef>Total</th>
+          <td mat-cell *matCellDef="let o" class="font-semibold">${{ o.total_amount }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="payment">
+          <th mat-header-cell *matHeaderCellDef>Payment</th>
+          <td mat-cell *matCellDef="let o">
+            <span [class]="paymentClass(o.id)">{{ paymentLabel(o.id) }}</span>
           </td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
-            ${{ order.total_amount }}
+        </ng-container>
+
+        <ng-container matColumnDef="date">
+          <th mat-header-cell *matHeaderCellDef>Date</th>
+          <td mat-cell *matCellDef="let o">{{ o.created_at | date : 'short' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>Status</th>
+          <td mat-cell *matCellDef="let o">
+            <mat-select
+              class="status-select min-w-[140px]"
+              [value]="o.status"
+              (selectionChange)="updateStatus(o, $event.value)"
+            >
+              @for (st of statusOptions; track st) {
+                <mat-option [value]="st">{{ st }}</mat-option>
+              }
+            </mat-select>
           </td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-            {{ order.created_at | date:'short' }}
-          </td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-            <select
-              [value]="order.status"
-              (change)="updateStatus(order, $event)"
-              [class]="'status-select block w-full pl-3 pr-8 py-2 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-400 ' + statusClass(order.status)">
-              <option *ngFor="let status of statusOptions" [value]="status">{{ status }}</option>
-            </select>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns()"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns()"></tr>
+      </table>
+    </div>
+  }
 </div>

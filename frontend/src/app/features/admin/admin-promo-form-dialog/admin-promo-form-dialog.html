@@ -1,0 +1,52 @@
+<h2 mat-dialog-title>{{ isEdit ? 'Edit promo code' : 'Create promo code' }}</h2>
+
+<div mat-dialog-content class="!max-w-lg flex flex-col gap-3 pt-2">
+  <form [formGroup]="form" class="flex flex-col gap-3">
+    <mat-form-field appearance="outline">
+      <mat-label>Code</mat-label>
+      <input matInput formControlName="code" placeholder="SUMMER25" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Discount type</mat-label>
+      <mat-select formControlName="discount_type">
+        <mat-option value="percentage">Percentage</mat-option>
+        <mat-option value="fixed">Fixed amount</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Value</mat-label>
+      <input matInput type="text" formControlName="value" placeholder="10 or 10.50" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Minimum order amount</mat-label>
+      <input matInput type="text" formControlName="minimum_order_amount" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Max uses (empty = unlimited)</mat-label>
+      <input matInput type="number" formControlName="max_uses" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Starts at (optional)</mat-label>
+      <input matInput type="datetime-local" formControlName="starts_at" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Expires at (optional)</mat-label>
+      <input matInput type="datetime-local" formControlName="expires_at" />
+    </mat-form-field>
+
+    <mat-slide-toggle formControlName="is_active">Active</mat-slide-toggle>
+  </form>
+</div>
+
+<div mat-dialog-actions align="end" class="!px-6 !pb-4 gap-2">
+  <button mat-button type="button" (click)="cancel()" [disabled]="saving">Cancel</button>
+  <button mat-flat-button color="primary" type="button" (click)="save()" [disabled]="saving">
+    {{ saving ? 'Saving…' : 'Save' }}
+  </button>
+</div>

@@ -35,7 +35,7 @@
       <app-search-bar class="hidden lg:block"></app-search-bar>
 
       <ng-container *ngIf="isAuthenticated(); else loggedOut">
-        <a *ngIf="isSellerOrAdmin()" [routerLink]="currentUser()?.role === 'admin' ? '/admin' : '/seller'" mat-button color="primary" class="!rounded-full hidden sm:inline-flex">
+        <a *ngIf="isSellerOrAdmin()" [routerLink]="currentUser()?.role === 'admin' ? '/admin/overview' : '/seller/overview'" mat-button color="primary" class="!rounded-full hidden sm:inline-flex">
           Dashboard
         </a>
 

@@ -1,0 +1,80 @@
+<div class="max-w-7xl mx-auto px-4 py-6">
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-900">Revenue &amp; analytics</h1>
+      <p class="text-slate-600 text-sm mt-1">Paid orders and monthly trends</p>
+    </div>
+    <button mat-stroked-button color="primary" (click)="load()" [disabled]="loading()">
+      <mat-icon>refresh</mat-icon>
+      Refresh
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="flex justify-center py-24">
+      <mat-spinner diameter="48"></mat-spinner>
+    </div>
+  } @else if (error()) {
+    <div class="rounded-xl border border-red-200 bg-red-50 text-red-800 px-4 py-3">{{ error() }}</div>
+  } @else {
+    <mat-card class="!mb-8 !shadow-sm !rounded-xl !border !border-slate-200">
+      <mat-card-content class="!py-6">
+        <h2 class="text-lg font-semibold text-slate-900 mb-4">Monthly revenue</h2>
+        @if (monthBuckets().length === 0) {
+          <p class="text-slate-500 text-sm">No paid orders yet.</p>
+        } @else {
+          <div class="flex flex-col gap-4">
+            @for (b of monthBuckets(); track b.label) {
+              <div>
+                <div class="flex justify-between text-sm mb-1">
+                  <span class="text-slate-700 font-medium">{{ b.label }}</span>
+                  <span class="text-slate-900 font-semibold">${{ b.total | number : '1.2-2' }}</span>
+                </div>
+                <div class="h-3 rounded-full bg-slate-100 overflow-hidden">
+                  <div
+                    class="h-full rounded-full bg-indigo-500 transition-all"
+                    [style.width.%]="barWidth(b)"
+                  ></div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="!shadow-sm !rounded-xl !border !border-slate-200">
+      <mat-card-content class="!py-6">
+        <h2 class="text-lg font-semibold text-slate-900 mb-4">Recent successful payments</h2>
+        @if (recentPayments().length === 0) {
+          <p class="text-slate-500 text-sm">No completed payments for your orders yet.</p>
+        } @else {
+          <table mat-table [dataSource]="recentPayments()" class="w-full revenue-table">
+            <ng-container matColumnDef="paid_at">
+              <th mat-header-cell *matHeaderCellDef>Paid</th>
+              <td mat-cell *matCellDef="let p">{{ p.paid_at | date : 'medium' }}</td>
+            </ng-container>
+            <ng-container matColumnDef="order_id">
+              <th mat-header-cell *matHeaderCellDef>Order</th>
+              <td mat-cell *matCellDef="let p">#{{ p.order_id }}</td>
+            </ng-container>
+            <ng-container matColumnDef="buyer">
+              <th mat-header-cell *matHeaderCellDef>Buyer</th>
+              <td mat-cell *matCellDef="let p">{{ p.buyer_email }}</td>
+            </ng-container>
+            <ng-container matColumnDef="amount">
+              <th mat-header-cell *matHeaderCellDef>Amount</th>
+              <td mat-cell *matCellDef="let p">{{ p.amount }} {{ p.currency }}</td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+          </table>
+        }
+      </mat-card-content>
+    </mat-card>
+
+    <div class="mt-6">
+      <a mat-button routerLink="/seller/overview">← Back to overview</a>
+    </div>
+  }
+</div>

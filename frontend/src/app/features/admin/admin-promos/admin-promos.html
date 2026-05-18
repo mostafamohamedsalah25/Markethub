@@ -1,0 +1,89 @@
+<div class="max-w-7xl mx-auto px-4 py-6">
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-900">Promo codes</h1>
+      <p class="text-slate-600 text-sm mt-1">Create and manage discount campaigns</p>
+    </div>
+    <button mat-flat-button color="primary" (click)="openCreate()">
+      <mat-icon>add</mat-icon>
+      New promo
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="flex justify-center py-20">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
+  } @else if (promos().length === 0) {
+    <div class="rounded-xl border border-dashed border-slate-200 bg-white p-12 text-center text-slate-600">
+      No promo codes yet. Create one to get started.
+    </div>
+  } @else {
+    <div class="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
+      <table mat-table [dataSource]="pagedPromos()" class="w-full">
+        <ng-container matColumnDef="code">
+          <th mat-header-cell *matHeaderCellDef>Code</th>
+          <td mat-cell *matCellDef="let p">
+            <span class="font-semibold text-slate-900">{{ p.code }}</span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="type">
+          <th mat-header-cell *matHeaderCellDef>Type</th>
+          <td mat-cell *matCellDef="let p">{{ p.discount_type }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="value">
+          <th mat-header-cell *matHeaderCellDef>Value</th>
+          <td mat-cell *matCellDef="let p">{{ p.value }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="active">
+          <th mat-header-cell *matHeaderCellDef>Active</th>
+          <td mat-cell *matCellDef="let p">
+            <mat-slide-toggle [checked]="p.is_active" (change)="toggleActive(p, $event.checked)">
+            </mat-slide-toggle>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="usage">
+          <th mat-header-cell *matHeaderCellDef>Usage</th>
+          <td mat-cell *matCellDef="let p">
+            {{ p.used_count }}
+            @if (p.max_uses != null) {
+              <span class="text-slate-500"> / {{ p.max_uses }}</span>
+            }
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="min">
+          <th mat-header-cell *matHeaderCellDef>Min order</th>
+          <td mat-cell *matCellDef="let p">{{ p.minimum_order_amount }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef class="!text-right">Actions</th>
+          <td mat-cell *matCellDef="let p" class="!text-right whitespace-nowrap">
+            <button mat-icon-button (click)="edit(p)" matTooltip="Edit">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button color="warn" (click)="remove(p)" matTooltip="Delete">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      </table>
+      <mat-paginator
+        [length]="promos().length"
+        [pageIndex]="pageIndex()"
+        [pageSize]="pageSize()"
+        [pageSizeOptions]="[5, 10, 25]"
+        (page)="onPage($event)"
+      >
+      </mat-paginator>
+    </div>
+  }
+</div>

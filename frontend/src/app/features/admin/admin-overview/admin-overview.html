@@ -1,0 +1,103 @@
+<div class="max-w-7xl mx-auto px-4 py-6">
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-900">Admin overview</h1>
+      <p class="text-slate-600 text-sm mt-1">Platform metrics and quick links</p>
+    </div>
+    <button mat-stroked-button color="primary" (click)="load()" [disabled]="loading()">
+      <mat-icon class="!text-lg">refresh</mat-icon>
+      Refresh
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="flex justify-center py-24">
+      <mat-spinner diameter="48"></mat-spinner>
+    </div>
+  } @else if (error()) {
+    <div class="rounded-xl border border-red-200 bg-red-50 text-red-800 px-4 py-3">{{ error() }}</div>
+  } @else {
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+      <mat-card class="!shadow-sm !rounded-xl !border !border-slate-200">
+        <mat-card-content class="!pt-6">
+          <div class="flex items-start justify-between">
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Users</p>
+              <p class="text-3xl font-bold text-slate-900 mt-1">{{ userCount() }}</p>
+            </div>
+            <mat-icon class="text-indigo-500">groups</mat-icon>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="!shadow-sm !rounded-xl !border !border-slate-200">
+        <mat-card-content class="!pt-6">
+          <div class="flex items-start justify-between">
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Orders</p>
+              <p class="text-3xl font-bold text-slate-900 mt-1">{{ orderCount() }}</p>
+            </div>
+            <mat-icon class="text-emerald-500">receipt_long</mat-icon>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="!shadow-sm !rounded-xl !border !border-slate-200">
+        <mat-card-content class="!pt-6">
+          <div class="flex items-start justify-between">
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Revenue (paid)</p>
+              <p class="text-3xl font-bold text-slate-900 mt-1">${{ revenue() | number : '1.2-2' }}</p>
+            </div>
+            <mat-icon class="text-amber-500">payments</mat-icon>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="!shadow-sm !rounded-xl !border !border-slate-200">
+        <mat-card-content class="!pt-6">
+          <div class="flex items-start justify-between">
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Payments succeeded</p>
+              <p class="text-3xl font-bold text-slate-900 mt-1">{{ paymentSuccess() }}</p>
+            </div>
+            <mat-icon class="text-green-600">check_circle</mat-icon>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="!shadow-sm !rounded-xl !border !border-slate-200">
+        <mat-card-content class="!pt-6">
+          <div class="flex items-start justify-between">
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Payments failed</p>
+              <p class="text-3xl font-bold text-slate-900 mt-1">{{ paymentFailed() }}</p>
+            </div>
+            <mat-icon class="text-red-500">error</mat-icon>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="!shadow-sm !rounded-xl !border !border-slate-200">
+        <mat-card-content class="!pt-6">
+          <div class="flex items-start justify-between">
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Promos</p>
+              <p class="text-lg font-bold text-slate-900 mt-1">
+                <span class="text-3xl">{{ promoActive() }}</span>
+                <span class="text-slate-500 font-normal text-base"> / {{ promoTotal() }} active</span>
+              </p>
+            </div>
+            <mat-icon class="text-violet-500">local_offer</mat-icon>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <div class="flex flex-wrap gap-3">
+      <a mat-stroked-button color="primary" routerLink="/admin/promos">Manage promos</a>
+      <a mat-stroked-button color="primary" routerLink="/admin/payments">Payment activity</a>
+      <a mat-stroked-button routerLink="/admin/orders">All orders</a>
+    </div>
+  }
+</div>

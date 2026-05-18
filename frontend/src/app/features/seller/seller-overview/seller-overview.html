@@ -1,0 +1,62 @@
+<div class="max-w-7xl mx-auto px-4 py-6">
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-900">Seller overview</h1>
+      <p class="text-slate-600 text-sm mt-1">Your store at a glance</p>
+    </div>
+    <button mat-stroked-button color="primary" (click)="load()" [disabled]="loading()">
+      <mat-icon>refresh</mat-icon>
+      Refresh
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="flex justify-center py-24">
+      <mat-spinner diameter="48"></mat-spinner>
+    </div>
+  } @else if (error()) {
+    <div class="rounded-xl border border-red-200 bg-red-50 text-red-800 px-4 py-3">{{ error() }}</div>
+  } @else {
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+      <mat-card class="!shadow-sm !rounded-xl !border !border-slate-200">
+        <mat-card-content class="!pt-6">
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Products</p>
+          <p class="text-3xl font-bold text-slate-900 mt-1">{{ productCount() }}</p>
+          <mat-icon class="text-indigo-500 mt-2">inventory_2</mat-icon>
+        </mat-card-content>
+      </mat-card>
+      <mat-card class="!shadow-sm !rounded-xl !border !border-slate-200">
+        <mat-card-content class="!pt-6">
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Orders</p>
+          <p class="text-3xl font-bold text-slate-900 mt-1">{{ orderCount() }}</p>
+          <mat-icon class="text-emerald-500 mt-2">receipt_long</mat-icon>
+        </mat-card-content>
+      </mat-card>
+      <mat-card class="!shadow-sm !rounded-xl !border !border-slate-200">
+        <mat-card-content class="!pt-6">
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Revenue (paid)</p>
+          <p class="text-3xl font-bold text-slate-900 mt-1">${{ revenue() | number : '1.2-2' }}</p>
+          <mat-icon class="text-amber-500 mt-2">payments</mat-icon>
+        </mat-card-content>
+      </mat-card>
+      <mat-card class="!shadow-sm !rounded-xl !border !border-slate-200">
+        <mat-card-content class="!pt-6">
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Paid orders</p>
+          <p class="text-3xl font-bold text-slate-900 mt-1">{{ paidCount() }}</p>
+        </mat-card-content>
+      </mat-card>
+      <mat-card class="!shadow-sm !rounded-xl !border !border-slate-200">
+        <mat-card-content class="!pt-6">
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Pending payments</p>
+          <p class="text-3xl font-bold text-slate-900 mt-1">{{ pendingPayments() }}</p>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <div class="flex flex-wrap gap-3">
+      <a mat-stroked-button color="primary" routerLink="/seller/products">Manage products</a>
+      <a mat-stroked-button routerLink="/seller/orders">View orders</a>
+      <a mat-stroked-button routerLink="/seller/revenue">Revenue &amp; analytics</a>
+    </div>
+  }
+</div>
