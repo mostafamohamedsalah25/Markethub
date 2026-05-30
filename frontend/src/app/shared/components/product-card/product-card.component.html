@@ -1,42 +1,38 @@
 <div [routerLink]="['/products', product.slug]" class="relative">
   <!-- Image Container -->
   <div class="relative aspect-[4/5] overflow-hidden rounded-lg bg-surface-container mb-4">
-    <img
-      [src]="product.images | primaryImage"
-      (error)="onImageError($event)"
-      [alt]="product.name"
-      class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-    />
-    
+    <img [src]="product.images | primaryImage" (error)="onImageError($event)" [alt]="product.name"
+      class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+
     <!-- Hover Action -->
-    <div class="absolute bottom-4 left-4 right-4 translate-y-12 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
-      <button 
-        [disabled]="product.stock === 0"
-        class="w-full bg-primary text-on-primary py-2 rounded-lg font-label-md shadow-xl active:scale-95 transition-transform disabled:bg-slate-400 disabled:opacity-50" 
-        (click)="addToCart($event)"
-      >
+    <div
+      class="absolute bottom-4 left-4 right-4 translate-y-12 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+      <button [disabled]="product.stock === 0"
+        class="w-full bg-primary text-on-primary py-2 rounded-lg font-label-md shadow-xl active:scale-95 transition-transform disabled:bg-slate-400 disabled:opacity-50"
+        (click)="addToCart($event)">
         Add to Cart
       </button>
     </div>
 
     <!-- Wishlist Button -->
-    <button 
-      (click)="toggleWishlist($event)"
-      class="absolute top-4 right-4 p-2 bg-white/80 backdrop-blur-sm rounded-full text-on-surface-variant hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
-    >
-      <span class="material-symbols-outlined !text-lg">favorite</span>
+    <button (click)="toggleWishlist($event)" [class.!text-red-500]="isInWishlist()"
+      class="absolute top-4 right-4 p-2 bg-white/80 backdrop-blur-sm rounded-full text-on-surface-variant hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity shadow-sm">
+      <span class="material-symbols-outlined !text-lg"
+        [style.font-variation-settings]="'\'FILL\' ' + (isInWishlist() ? 1 : 0)">
+        favorite
+      </span>
     </button>
 
     <!-- Badges -->
     <div class="absolute top-4 left-4 flex flex-col gap-2">
       @if (product.stock === 0) {
-        <span class="bg-error text-on-error px-2 py-1 rounded-sm font-label-sm shadow-sm">
-          Out of Stock
-        </span>
+      <span class="bg-error text-on-error px-2 py-1 rounded-sm font-label-sm shadow-sm">
+        Out of Stock
+      </span>
       } @else if (hasDiscount) {
-        <span class="bg-white text-primary px-2 py-1 rounded-sm font-label-sm shadow-sm">
-          Sale
-        </span>
+      <span class="bg-white text-primary px-2 py-1 rounded-sm font-label-sm shadow-sm">
+        Sale
+      </span>
       }
     </div>
   </div>
@@ -46,17 +42,17 @@
     <h4 class="font-body-md font-bold text-on-surface line-clamp-2 min-h-[3rem] hover:text-primary transition-colors">
       {{ product.name }}
     </h4>
-    
+
     <!-- Rating (Dynamic Component) -->
-    <app-star-rating [rating]="0" [count]="0"></app-star-rating>
+    <app-star-rating [rating]="product.average_rating || 0" [count]="product.review_count || 0"></app-star-rating>
 
     <!-- Price -->
     <div class="flex items-center gap-2">
       @if (hasDiscount) {
-        <p class="text-primary font-bold">{{ product.discount_price | currency }}</p>
-        <p class="text-on-surface-variant line-through font-body-sm">{{ product.price | currency }}</p>
+      <p class="text-primary font-bold">{{ product.discount_price | currency }}</p>
+      <p class="text-on-surface-variant line-through font-body-sm">{{ product.price | currency }}</p>
       } @else {
-        <p class="text-primary font-bold">{{ product.price | currency }}</p>
+      <p class="text-primary font-bold">{{ product.price | currency }}</p>
       }
     </div>
   </div>

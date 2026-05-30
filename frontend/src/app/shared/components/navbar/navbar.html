@@ -9,24 +9,18 @@
 
       <nav class="hidden md:flex items-center gap-6">
         @for (link of navLinks; track link.label) {
-          @if (link.route) {
-            <a 
-              [routerLink]="link.route" 
-              [queryParams]="link.queryParams || {}"
-              routerLinkActive="text-indigo-600 border-indigo-600" 
-              [routerLinkActiveOptions]="{exact: true}" 
-              class="text-slate-600 font-medium border-b-2 border-transparent pb-1 hover:text-indigo-600 transition-colors"
-            >
-              {{ link.label }}
-            </a>
-          } @else if (link.feature) {
-            <button 
-              (click)="showComingSoon(link.feature)"
-              class="text-slate-600 font-medium border-b-2 border-transparent pb-1 hover:text-indigo-600 transition-colors cursor-pointer"
-            >
-              {{ link.label }}
-            </button>
-          }
+        @if (link.route) {
+        <a [routerLink]="link.route" [queryParams]="link.queryParams || {}"
+          routerLinkActive="text-indigo-600 border-indigo-600" [routerLinkActiveOptions]="{exact: true}"
+          class="text-slate-600 font-medium border-b-2 border-transparent pb-1 hover:text-indigo-600 transition-colors">
+          {{ link.label }}
+        </a>
+        } @else if (link.feature) {
+        <button (click)="showComingSoon(link.feature)"
+          class="text-slate-600 font-medium border-b-2 border-transparent pb-1 hover:text-indigo-600 transition-colors cursor-pointer">
+          {{ link.label }}
+        </button>
+        }
         }
       </nav>
     </div>
@@ -35,15 +29,65 @@
       <app-search-bar class="hidden lg:block"></app-search-bar>
 
       <ng-container *ngIf="isAuthenticated(); else loggedOut">
-        <a *ngIf="isSellerOrAdmin()" [routerLink]="currentUser()?.role === 'admin' ? '/admin/overview' : '/seller/overview'" mat-button color="primary" class="!rounded-full hidden sm:inline-flex">
+        <a *ngIf="isSellerOrAdmin()"
+          [routerLink]="currentUser()?.role === 'admin' ? '/admin/overview' : '/seller/overview'" mat-button
+          color="primary" class="!rounded-full hidden sm:inline-flex">
           Dashboard
         </a>
+
+        <button mat-icon-button (click)="notificationService.fetchNotifications()"
+          [matMenuTriggerFor]="notificationMenu" class="text-slate-600 hover:bg-slate-100">
+          <mat-icon [matBadge]="unreadNotifications() || null" matBadgeColor="warn"
+            matBadgeSize="small">notifications</mat-icon>
+        </button>
+
+        <mat-menu #notificationMenu="matMenu" class="!mt-2 !rounded-xl !min-w-[320px] max-h-[400px]">
+          <div class="px-4 py-3 border-b border-slate-100 flex justify-between items-center">
+            <span class="text-sm font-bold text-slate-900">Notifications</span>
+            <button *ngIf="unreadNotifications() > 0" (click)="markAllAsRead(); $event.stopPropagation()"
+              class="text-xs text-indigo-600 hover:underline">Mark all as read</button>
+          </div>
+
+          <div class="py-2" (click)="$event.stopPropagation()">
+            <ng-container *ngIf="notifications().length > 0; else noNotifications">
+              <div *ngFor="let notification of notifications()" (click)="markAsRead(notification)"
+                class="px-4 py-3 hover:bg-slate-50 transition-colors cursor-pointer border-b border-slate-50 last:border-0"
+                [class.bg-indigo-50]="!notification.is_read">
+                <div class="flex gap-3">
+                  <div class="mt-1">
+                    <mat-icon *ngIf="notification.notification_type === 'order_status'"
+                      class="text-amber-500 !text-lg">shopping_bag</mat-icon>
+                    <mat-icon *ngIf="notification.notification_type === 'payment'"
+                      class="text-emerald-500 !text-lg">payments</mat-icon>
+                    <mat-icon *ngIf="notification.notification_type === 'promotion'"
+                      class="text-indigo-500 !text-lg">campaign</mat-icon>
+                    <mat-icon *ngIf="notification.notification_type === 'system'"
+                      class="text-slate-500 !text-lg">notifications</mat-icon>
+                  </div>
+                  <div class="flex-1">
+                    <p class="text-sm text-slate-800 leading-snug" [class.font-bold]="!notification.is_read">{{
+                      notification.message }}</p>
+                    <p class="text-[10px] text-slate-500 mt-1">{{ notification.created_at | date:'short' }}</p>
+                  </div>
+                  <div *ngIf="!notification.is_read" class="w-2 h-2 rounded-full bg-indigo-600 mt-2"></div>
+                </div>
+              </div>
+            </ng-container>
+            <ng-template #noNotifications>
+              <div class="px-4 py-8 text-center bg-white">
+                <mat-icon class="text-slate-300 !text-4xl h-10 w-10">notifications_off</mat-icon>
+                <p class="text-sm text-slate-500 mt-2">No notifications yet</p>
+              </div>
+            </ng-template>
+          </div>
+        </mat-menu>
 
         <button mat-icon-button class="text-slate-600 hover:bg-slate-100" routerLink="/cart">
           <mat-icon matBadgeColor="warn" matBadgeSize="small">shopping_cart</mat-icon>
         </button>
 
-        <button mat-icon-button [matMenuTriggerFor]="userMenu" class="text-slate-600 hover:bg-slate-100 border border-slate-200">
+        <button mat-icon-button [matMenuTriggerFor]="userMenu"
+          class="text-slate-600 hover:bg-slate-100 border border-slate-200">
           <mat-icon>account_circle</mat-icon>
         </button>
 
@@ -59,6 +103,10 @@
           <button mat-menu-item routerLink="/my-orders">
             <mat-icon class="text-slate-500">receipt_long</mat-icon>
             <span>My Orders</span>
+          </button>
+          <button mat-menu-item routerLink="/wishlist">
+            <mat-icon class="text-slate-500">favorite</mat-icon>
+            <span>My Wishlist</span>
           </button>
           <mat-divider></mat-divider>
           <button mat-menu-item (click)="logout()" class="!text-red-600">

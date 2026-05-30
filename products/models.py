@@ -32,6 +32,8 @@ class Product(models.Model):
     stock = models.IntegerField(default=0)
 
     is_active = models.BooleanField(default=True)
+    average_rating = models.DecimalField(max_digits=3, decimal_places=2, default=0.00)
+    review_count = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -44,6 +46,16 @@ class Product(models.Model):
 
     def __str__(self) -> str:
         return str(self.name)
+
+    def update_rating(self):
+        reviews = self.reviews.all()
+        if reviews.exists():
+            self.average_rating = reviews.aggregate(models.Avg('rating'))['rating__avg']
+            self.review_count = reviews.count()
+        else:
+            self.average_rating = 0.00
+            self.review_count = 0
+        self.save(update_fields=['average_rating', 'review_count'])
 
 
 class ProductImage(models.Model):

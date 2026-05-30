@@ -34,21 +34,25 @@
       </mat-card>
       <mat-card class="!shadow-sm !rounded-xl !border !border-slate-200">
         <mat-card-content class="!pt-6">
-          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Revenue (paid)</p>
-          <p class="text-3xl font-bold text-slate-900 mt-1">${{ revenue() | number : '1.2-2' }}</p>
-          <mat-icon class="text-amber-500 mt-2">payments</mat-icon>
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Total Sales (Units)</p>
+          <p class="text-3xl font-bold text-slate-900 mt-1">{{ salesCount() }}</p>
+          <mat-icon class="text-amber-500 mt-2">shopping_bag</mat-icon>
         </mat-card-content>
       </mat-card>
       <mat-card class="!shadow-sm !rounded-xl !border !border-slate-200">
         <mat-card-content class="!pt-6">
-          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Paid orders</p>
-          <p class="text-3xl font-bold text-slate-900 mt-1">{{ paidCount() }}</p>
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Average Rating</p>
+          <div class="flex items-center gap-2 mt-1">
+            <p class="text-3xl font-bold text-slate-900">{{ averageRating() | number : '1.1-1' }}</p>
+            <mat-icon class="text-yellow-500 !text-2xl">star</mat-icon>
+          </div>
+          <mat-icon class="text-yellow-500 mt-2">rate_review</mat-icon>
         </mat-card-content>
       </mat-card>
       <mat-card class="!shadow-sm !rounded-xl !border !border-slate-200">
         <mat-card-content class="!pt-6">
-          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Pending payments</p>
-          <p class="text-3xl font-bold text-slate-900 mt-1">{{ pendingPayments() }}</p>
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Unfulfilled Orders</p>
+          <p class="text-3xl font-bold text-slate-900 mt-1">{{ orderCount() }}</p>
         </mat-card-content>
       </mat-card>
     </div>

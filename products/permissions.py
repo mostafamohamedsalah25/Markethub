@@ -20,3 +20,9 @@ class IsSellerOwnerOrAdmin(BasePermission):
         if request.user.role == 'admin':
             return True
         return hasattr(request.user, 'seller_profile') and obj.seller == request.user.seller_profile
+
+class IsOwnerOrReadOnly(BasePermission):
+    def has_object_permission(self, request, view, obj):
+        if request.method in SAFE_METHODS:
+            return True
+        return obj.user == request.user

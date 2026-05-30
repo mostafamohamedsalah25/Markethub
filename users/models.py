@@ -2,6 +2,8 @@ import uuid
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 from django.utils.translation import gettext_lazy as _
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 class UserManager(BaseUserManager):
     def get_by_natural_key(self, username):
@@ -74,3 +76,8 @@ class SellerProfile(models.Model):
 
     def __str__(self):
         return self.store_name
+
+@receiver(post_save, sender=User)
+def create_seller_profile(sender, instance, created, **kwargs):
+    if created and instance.role == 'seller':
+        SellerProfile.objects.get_or_create(user=instance, defaults={'store_name': f"{instance.email}'s Store"})

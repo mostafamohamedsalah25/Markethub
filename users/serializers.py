@@ -81,9 +81,14 @@ class RegisterSerializer(serializers.ModelSerializer):
             is_verified=auto_verify,
         )
 
-        # 3. Create SellerProfile only for sellers
+        # 3. Create or update SellerProfile for sellers
+        # The post_save signal may have already created a SellerProfile with a default store_name,
+        # so we use update_or_create to set the user-provided store_name without causing an IntegrityError.
         if role == 'seller' and store_name:
-            SellerProfile.objects.create(user=user, store_name=store_name)
+            SellerProfile.objects.update_or_create(
+                user=user,
+                defaults={'store_name': store_name}
+            )
             
         return user
 
@@ -98,6 +103,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
     def get_seller_profile(self, obj):
         if obj.role == 'seller' and hasattr(obj, 'seller_profile'):
             return {
+                "id": obj.seller_profile.id,
                 "store_name": obj.seller_profile.store_name,
                 "description": obj.seller_profile.description,
                 "is_approved": obj.seller_profile.is_approved,
@@ -119,3 +125,37 @@ class AdminUserSerializer(serializers.ModelSerializer):
             'updated_at',
         )
         read_only_fields = ('id', 'created_at', 'updated_at')
+
+
+class SellerProfileSerializer(serializers.ModelSerializer):
+    total_products = serializers.SerializerMethodField()
+    total_sales = serializers.SerializerMethodField()
+    average_rating = serializers.SerializerMethodField()
+    total_orders = serializers.SerializerMethodField()
+
+    class Meta:
+        model = SellerProfile
+        fields = [
+            'id', 'store_name', 'description', 'is_approved', 'balance',
+            'total_products', 'total_sales', 'average_rating', 'total_orders'
+        ]
+        read_only_fields = ['id', 'is_approved', 'balance']
+
+    def get_total_products(self, obj):
+        return obj.products.count()
+
+    def get_total_sales(self, obj):
+        from orders.models import OrderItem
+        from django.db.models import Sum
+        return OrderItem.objects.filter(
+            product__seller=obj,
+            order__status='delivered'
+        ).aggregate(Sum('quantity'))['quantity__sum'] or 0
+
+    def get_average_rating(self, obj):
+        from django.db.models import Avg
+        from products.models import ProductReview
+        return ProductReview.objects.filter(product__seller=obj).aggregate(Avg('rating'))['rating__avg'] or 0.0
+
+    def get_total_orders(self, obj):
+        return obj.received_orders.count()

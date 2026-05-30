@@ -14,15 +14,18 @@ import { CartActionsService } from '../../../core/services/cart-actions.service'
 import { ConfigService } from '../../../core/services/config';
 import { PrimaryImagePipe } from '../../../shared/pipes/primary-image-pipe';
 import { StarRatingComponent } from '../../../shared/components/star-rating/star-rating';
+import { WishlistService } from '../../../core/services/wishlist.service';
+import { AuthService } from '../../../core/services/auth';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-catalog',
   standalone: true,
   imports: [
-    CommonModule, 
-    FormsModule, 
-    ReactiveFormsModule, 
-    RouterLink, 
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    RouterLink,
     ProductCardComponent,
     PrimaryImagePipe,
     StarRatingComponent
@@ -38,7 +41,36 @@ export class CatalogComponent implements OnInit, OnDestroy {
   private uiService = inject(UiService);
   private cartActions = inject(CartActionsService);
   private configService = inject(ConfigService);
+  private wishlistService = inject(WishlistService);
+  private authService = inject(AuthService);
+  private snackBar = inject(MatSnackBar);
   private cdr = inject(ChangeDetectorRef);
+
+  isWishlisted(productId: number) {
+    return this.wishlistService.isWishlisted(productId);
+  }
+
+  toggleWishlist(event: Event, product: Product): void {
+    event.stopPropagation();
+    event.preventDefault();
+
+    if (!this.authService.isAuthenticated()) {
+      this.snackBar.open('Please login to manage your wishlist', 'Login', { duration: 3000 });
+      return;
+    }
+
+    if (this.isWishlisted(product.id)) {
+      this.wishlistService.removeFromWishlistByProductId(product.id).subscribe({
+        next: () => this.snackBar.open('Removed from wishlist', 'OK', { duration: 2000 }),
+        error: () => this.snackBar.open('Failed to remove from wishlist', 'OK', { duration: 2000 })
+      });
+    } else {
+      this.wishlistService.addToWishlist(product.id).subscribe({
+        next: () => this.snackBar.open('Added to wishlist', 'OK', { duration: 2000 }),
+        error: () => this.snackBar.open('Failed to add to wishlist', 'OK', { duration: 2000 })
+      });
+    }
+  }
 
   // Filter state
   searchTerm = '';
@@ -103,6 +135,11 @@ export class CatalogComponent implements OnInit, OnDestroy {
         this.isLoading = false;
         this.products = [];
       }
+
+      if (this.authService.isAuthenticated()) {
+        this.wishlistService.loadWishlist();
+      }
+
       this.cdr.markForCheck();
     });
   }
@@ -181,15 +218,15 @@ export class CatalogComponent implements OnInit, OnDestroy {
   }
 
   onPriceChange(): void {
-    this.updateUrlParams({ 
-      min_price: this.minPrice, 
+    this.updateUrlParams({
+      min_price: this.minPrice,
       max_price: this.maxPrice,
       page: null
     });
   }
 
   onAvailabilityChange(): void {
-    this.updateUrlParams({ 
+    this.updateUrlParams({
       availability: this.availability ? 'true' : null,
       page: null
     });

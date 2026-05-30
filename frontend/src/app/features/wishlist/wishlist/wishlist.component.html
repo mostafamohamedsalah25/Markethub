@@ -1,0 +1,36 @@
+<main class="max-w-7xl mx-auto px-6 py-12 min-h-[60vh]">
+
+    <div class="flex justify-between items-end mb-10">
+        <div class="space-y-2">
+            <h1 class="text-3xl font-bold text-on-surface">My Wishlist</h1>
+            <p class="text-on-surface-variant">Manage your saved items and add them to cart</p>
+        </div>
+        <a routerLink="/catalog" class="text-primary font-label-md hover:underline flex items-center gap-1">
+            Continue Shopping <span class="material-symbols-outlined text-sm">arrow_forward</span>
+        </a>
+    </div>
+
+    @if (wishlistItems().length > 0) {
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        @for (item of wishlistItems(); track item.id) {
+        <app-product-card [product]="item.product"></app-product-card>
+        }
+    </div>
+    } @else {
+    <div
+        class="flex flex-col items-center justify-center py-24 text-center bg-surface-container-low rounded-3xl border border-dashed border-outline">
+        <div class="w-48 h-48 bg-surface-container rounded-full flex items-center justify-center mb-6">
+            <span class="material-symbols-outlined text-6xl text-primary opacity-50">favorite</span>
+        </div>
+        <h2 class="text-2xl font-bold text-on-surface mb-2">Your wishlist is empty</h2>
+        <p class="text-on-surface-variant mb-8 max-w-md">
+            Explore our collection and save your favorite items to see them here later.
+        </p>
+        <a routerLink="/catalog"
+            class="bg-primary text-on-primary px-8 py-3 rounded-lg font-label-md hover:opacity-90 shadow-lg">
+            Start Shopping
+        </a>
+    </div>
+    }
+
+</main>

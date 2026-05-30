@@ -1,4 +1,5 @@
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenRefreshView
 from .views import (
     RegisterView, 
@@ -9,8 +10,12 @@ from .views import (
     ResendVerificationView,
     AdminUserListView,
     AdminUserActivateView,
-    GoogleLoginView
+    GoogleLoginView,
+    SellerProfileViewSet
 )
+
+router = DefaultRouter()
+router.register(r'seller-profiles', SellerProfileViewSet, basename='seller-profile')
 
 urlpatterns = [
     # Auth
@@ -26,4 +31,7 @@ urlpatterns = [
     # Admin
     path('admin/users/', AdminUserListView.as_view(), name='admin_user_list'),
     path('admin/users/<uuid:id>/activate/', AdminUserActivateView.as_view(), name='admin_user_activate'),
+    
+    # Profiles
+    path('', include(router.urls)),
 ]

@@ -1,5 +1,5 @@
 ﻿<div class="max-w-7xl mx-auto px-6 py-12">
-  
+
   <!-- Breadcrumb -->
   <div class="text-sm text-on-surface-variant mb-6">
     <a routerLink="/" class="hover:text-primary">Home</a>
@@ -15,9 +15,9 @@
       </h1>
       <p class="text-on-surface-variant">
         @if (totalCount > 0) {
-          Showing {{ showingFrom }} - {{ showingTo }} of {{ totalCount }} products
+        Showing {{ showingFrom }} - {{ showingTo }} of {{ totalCount }} products
         } @else if (!isLoading) {
-          No products found
+        No products found
         }
       </p>
     </div>
@@ -25,23 +25,17 @@
     <div class="flex items-center gap-4 w-full md:w-auto">
       <!-- Search Input -->
       <div class="relative w-full md:w-64">
-        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
-        <input 
-          type="text" 
-          [ngModel]="searchTerm"
-          (ngModelChange)="onSearchChange($event)"
-          placeholder="Search products..." 
-          class="w-full pl-10 pr-4 py-2 bg-surface-container rounded-lg border-none focus:ring-2 focus:ring-primary outline-none"
-        >
+        <span
+          class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+        <input type="text" [ngModel]="searchTerm" (ngModelChange)="onSearchChange($event)"
+          placeholder="Search products..."
+          class="w-full pl-10 pr-4 py-2 bg-surface-container rounded-lg border-none focus:ring-2 focus:ring-primary outline-none">
       </div>
 
       <!-- Sort Dropdown -->
       <div class="relative flex-shrink-0 bg-surface-container rounded-lg px-2">
-        <select 
-          [(ngModel)]="ordering"
-          (change)="onOrderingChange()"
-          class="bg-transparent border-none py-2 pr-8 focus:ring-0 cursor-pointer text-on-surface font-label-md"
-        >
+        <select [(ngModel)]="ordering" (change)="onOrderingChange()"
+          class="bg-transparent border-none py-2 pr-8 focus:ring-0 cursor-pointer text-on-surface font-label-md">
           <option value="-created_at">Newest</option>
           <option value="created_at">Oldest</option>
           <option value="price">Price: Low to High</option>
@@ -51,20 +45,14 @@
 
       <!-- View Toggles -->
       <div class="hidden md:flex bg-surface-container rounded-lg p-1">
-        <button 
-          (click)="viewMode = 'grid'"
-          [class.bg-white]="viewMode === 'grid'"
+        <button (click)="viewMode = 'grid'" [class.bg-white]="viewMode === 'grid'"
           [class.shadow-sm]="viewMode === 'grid'"
-          class="p-1.5 rounded-md text-on-surface-variant hover:text-on-surface transition-colors"
-        >
+          class="p-1.5 rounded-md text-on-surface-variant hover:text-on-surface transition-colors">
           <span class="material-symbols-outlined text-sm">grid_view</span>
         </button>
-        <button 
-          (click)="viewMode = 'list'"
-          [class.bg-white]="viewMode === 'list'"
+        <button (click)="viewMode = 'list'" [class.bg-white]="viewMode === 'list'"
           [class.shadow-sm]="viewMode === 'list'"
-          class="p-1.5 rounded-md text-on-surface-variant hover:text-on-surface transition-colors"
-        >
+          class="p-1.5 rounded-md text-on-surface-variant hover:text-on-surface transition-colors">
           <span class="material-symbols-outlined text-sm">view_list</span>
         </button>
       </div>
@@ -74,7 +62,7 @@
   <div class="flex flex-col lg:flex-row gap-10">
     <!-- Left Sidebar Filters -->
     <aside class="w-full lg:w-64 flex-shrink-0 space-y-8">
-      
+
       <!-- Clear Filters -->
       <div class="flex justify-between items-center">
         <h3 class="font-bold text-on-surface text-lg">Filters</h3>
@@ -86,30 +74,22 @@
         <h4 class="font-bold text-on-surface">Category</h4>
         <ul class="space-y-2">
           <li>
-            <button 
-              (click)="onCategorySelect(null)"
-              [class.text-primary]="!selectedCategory"
-              [class.font-bold]="!selectedCategory"
-              [class.border-l-2]="!selectedCategory"
+            <button (click)="onCategorySelect(null)" [class.text-primary]="!selectedCategory"
+              [class.font-bold]="!selectedCategory" [class.border-l-2]="!selectedCategory"
               [class.border-primary]="!selectedCategory"
-              class="w-full text-left pl-3 py-1 text-on-surface-variant hover:text-primary transition-colors text-sm"
-            >
+              class="w-full text-left pl-3 py-1 text-on-surface-variant hover:text-primary transition-colors text-sm">
               All Categories
             </button>
           </li>
           @for (cat of categories; track cat.id) {
-            <li>
-              <button 
-                (click)="onCategorySelect(cat.slug)"
-                [class.text-primary]="selectedCategory === cat.slug"
-                [class.font-bold]="selectedCategory === cat.slug"
-                [class.border-l-2]="selectedCategory === cat.slug"
-                [class.border-primary]="selectedCategory === cat.slug"
-                class="w-full text-left pl-3 py-1 text-on-surface-variant hover:text-primary transition-colors text-sm"
-              >
-                {{ cat.name }}
-              </button>
-            </li>
+          <li>
+            <button (click)="onCategorySelect(cat.slug)" [class.text-primary]="selectedCategory === cat.slug"
+              [class.font-bold]="selectedCategory === cat.slug" [class.border-l-2]="selectedCategory === cat.slug"
+              [class.border-primary]="selectedCategory === cat.slug"
+              class="w-full text-left pl-3 py-1 text-on-surface-variant hover:text-primary transition-colors text-sm">
+              {{ cat.name }}
+            </button>
+          </li>
           }
         </ul>
       </div>
@@ -120,21 +100,11 @@
       <div class="space-y-4">
         <h4 class="font-bold text-on-surface">Price Range</h4>
         <div class="flex items-center gap-3">
-          <input 
-            type="number" 
-            [(ngModel)]="minPrice"
-            (blur)="onPriceChange()"
-            placeholder="Min" 
-            class="w-full bg-surface-container rounded-lg border-none px-3 py-2 text-sm focus:ring-2 focus:ring-primary outline-none"
-          >
+          <input type="number" [(ngModel)]="minPrice" (blur)="onPriceChange()" placeholder="Min"
+            class="w-full bg-surface-container rounded-lg border-none px-3 py-2 text-sm focus:ring-2 focus:ring-primary outline-none">
           <span class="text-on-surface-variant">-</span>
-          <input 
-            type="number" 
-            [(ngModel)]="maxPrice"
-            (blur)="onPriceChange()"
-            placeholder="Max" 
-            class="w-full bg-surface-container rounded-lg border-none px-3 py-2 text-sm focus:ring-2 focus:ring-primary outline-none"
-          >
+          <input type="number" [(ngModel)]="maxPrice" (blur)="onPriceChange()" placeholder="Max"
+            class="w-full bg-surface-container rounded-lg border-none px-3 py-2 text-sm focus:ring-2 focus:ring-primary outline-none">
         </div>
       </div>
 
@@ -144,13 +114,10 @@
       <div class="space-y-4">
         <h4 class="font-bold text-on-surface">Availability</h4>
         <label class="flex items-center gap-3 cursor-pointer group">
-          <input 
-            type="checkbox" 
-            [(ngModel)]="availability"
-            (change)="onAvailabilityChange()"
-            class="w-5 h-5 rounded border-outline text-primary focus:ring-primary/50 cursor-pointer"
-          >
-          <span class="text-on-surface-variant group-hover:text-on-surface transition-colors text-sm">In Stock Only</span>
+          <input type="checkbox" [(ngModel)]="availability" (change)="onAvailabilityChange()"
+            class="w-5 h-5 rounded border-outline text-primary focus:ring-primary/50 cursor-pointer">
+          <span class="text-on-surface-variant group-hover:text-on-surface transition-colors text-sm">In Stock
+            Only</span>
         </label>
       </div>
 
@@ -161,13 +128,14 @@
         <h4 class="font-bold text-on-surface">Rating</h4>
         <div class="space-y-3">
           @for (rating of [5, 4, 3, 2, 1]; track rating) {
-            <label class="flex items-center gap-3 cursor-pointer group">
-              <input (change)="showComingSoon('Rating Filter')" type="radio" name="rating" [value]="rating" class="w-4 h-4 text-primary focus:ring-primary/50 cursor-pointer">
-              <app-star-rating [rating]="rating" [count]="0"></app-star-rating>
-              <span class="text-on-surface-variant text-sm ml-1 group-hover:text-on-surface">
-                {{ rating === 5 ? '5.0' : rating + '.0 & up' }}
-              </span>
-            </label>
+          <label class="flex items-center gap-3 cursor-pointer group">
+            <input (change)="showComingSoon('Rating Filter')" type="radio" name="rating" [value]="rating"
+              class="w-4 h-4 text-primary focus:ring-primary/50 cursor-pointer">
+            <app-star-rating [rating]="rating" [count]="0"></app-star-rating>
+            <span class="text-on-surface-variant text-sm ml-1 group-hover:text-on-surface">
+              {{ rating === 5 ? '5.0' : rating + '.0 & up' }}
+            </span>
+          </label>
           }
         </div>
       </div>
@@ -175,221 +143,212 @@
     </aside>
 
     @if (catalogView === 'categories') {
-      <div class="flex-1">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          @for (cat of categories; track cat.id) {
-            <button
-              (click)="browseCategory(cat.slug)"
-              class="group text-left p-6 bg-surface-container rounded-2xl border border-surface-container-high hover:border-primary hover:shadow-md transition-all"
-            >
-              <div class="aspect-video rounded-xl overflow-hidden bg-surface-container-high mb-4">
-                <img
-                  [src]="cat.image || 'https://placehold.co/600x400/e2e8f0/475569?text=Category'"
-                  (error)="onImageError($event)"
-                  [alt]="cat.name"
-                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-              </div>
-              <h3 class="text-xl font-bold text-on-surface group-hover:text-primary">{{ cat.name }}</h3>
-              <p class="text-sm text-on-surface-variant mt-1">Browse products â†’</p>
-            </button>
-          }
-        </div>
-        @if (categories.length === 0) {
-          <p class="text-center text-on-surface-variant py-12">No categories available.</p>
+    <div class="flex-1">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        @for (cat of categories; track cat.id) {
+        <button (click)="browseCategory(cat.slug)"
+          class="group text-left p-6 bg-surface-container rounded-2xl border border-surface-container-high hover:border-primary hover:shadow-md transition-all">
+          <div class="aspect-video rounded-xl overflow-hidden bg-surface-container-high mb-4">
+            <img [src]="cat.image || 'https://placehold.co/600x400/e2e8f0/475569?text=Category'"
+              (error)="onImageError($event)" [alt]="cat.name"
+              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+          </div>
+          <h3 class="text-xl font-bold text-on-surface group-hover:text-primary">{{ cat.name }}</h3>
+          <p class="text-sm text-on-surface-variant mt-1">Browse products â†’</p>
+        </button>
         }
       </div>
+      @if (categories.length === 0) {
+      <p class="text-center text-on-surface-variant py-12">No categories available.</p>
+      }
+    </div>
     } @else {
     <div class="flex-1">
-      
+
       <!-- Error State -->
       @if (hasError) {
-        <div class="bg-error-container text-on-error-container p-6 rounded-xl flex flex-col items-center justify-center text-center space-y-4">
-          <span class="material-symbols-outlined text-4xl">error</span>
-          <div>
-            <h3 class="font-bold text-lg">Oops! Something went wrong.</h3>
-            <p>We couldn't load the products. Please try again.</p>
-          </div>
-          <button (click)="fetchProducts()" class="bg-on-error-container text-white px-6 py-2 rounded-lg font-label-md hover:opacity-90">
-            Retry
-          </button>
+      <div
+        class="bg-error-container text-on-error-container p-6 rounded-xl flex flex-col items-center justify-center text-center space-y-4">
+        <span class="material-symbols-outlined text-4xl">error</span>
+        <div>
+          <h3 class="font-bold text-lg">Oops! Something went wrong.</h3>
+          <p>We couldn't load the products. Please try again.</p>
         </div>
+        <button (click)="fetchProducts()"
+          class="bg-on-error-container text-white px-6 py-2 rounded-lg font-label-md hover:opacity-90">
+          Retry
+        </button>
+      </div>
       }
 
       <!-- Grid Layout -->
       @if (viewMode === 'grid') {
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          
-          @for (product of products; track product.id) {
-            <app-product-card [product]="product"></app-product-card>
-          }
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
 
-          @if (isLoading) {
-            @for (i of [1,2,3,4,5,6]; track i) {
-              <div class="space-y-4 animate-pulse">
-                <div class="aspect-[4/5] bg-surface-container rounded-lg"></div>
-                <div class="h-4 bg-surface-container rounded w-3/4"></div>
-                <div class="h-4 bg-surface-container rounded w-1/2"></div>
-              </div>
-            }
-          }
+        @for (product of products; track product.id) {
+        <app-product-card [product]="product"></app-product-card>
+        }
+
+        @if (isLoading) {
+        @for (i of [1,2,3,4,5,6]; track i) {
+        <div class="space-y-4 animate-pulse">
+          <div class="aspect-[4/5] bg-surface-container rounded-lg"></div>
+          <div class="h-4 bg-surface-container rounded w-3/4"></div>
+          <div class="h-4 bg-surface-container rounded w-1/2"></div>
         </div>
-      } 
+        }
+        }
+      </div>
+      }
       <!-- List Layout -->
       @else {
-        <div class="flex flex-col gap-6">
-          @for (product of products; track product.id) {
-            <div class="flex gap-6 p-4 border border-surface-container-high rounded-xl hover:shadow-md transition-shadow group">
-              <!-- Image -->
-              <div [routerLink]="['/products', product.slug]" class="w-48 aspect-[4/5] flex-shrink-0 rounded-lg overflow-hidden relative bg-surface-container cursor-pointer">
-                <img 
-                  [src]="product.images | primaryImage"
-                  (error)="onImageError($event)"
-                  [alt]="product.name"
-                  class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                >
-              </div>
-              
-              <!-- Content -->
-              <div class="flex-1 flex flex-col justify-between py-2">
-                <div>
-                  <div class="flex justify-between items-start mb-2">
-                    <h3 [routerLink]="['/products', product.slug]" class="text-xl font-bold text-on-surface cursor-pointer hover:text-primary transition-colors">{{ product.name }}</h3>
-                    <div class="text-right">
-                      @if (product.discount_price && +product.discount_price < +product.price) {
-                        <p class="text-primary font-bold text-lg">{{ product.discount_price | currency }}</p>
-                        <p class="text-on-surface-variant line-through text-sm">{{ product.price | currency }}</p>
-                      } @else {
-                        <p class="text-primary font-bold text-lg">{{ product.price | currency }}</p>
-                      }
-                    </div>
-                  </div>
-                  
-                  <div class="flex items-center gap-2 mb-4">
-                    <app-star-rating [rating]="0" [count]="0"></app-star-rating>
-                    <span [class.bg-emerald-100]="product.stock > 0" [class.text-emerald-800]="product.stock > 0" [class.bg-red-100]="product.stock === 0" [class.text-red-800]="product.stock === 0" class="text-xs px-2 py-0.5 rounded">
-                      {{ product.stock > 0 ? 'In Stock' : 'Out of Stock' }}
-                    </span>
-                  </div>
+      <div class="flex flex-col gap-6">
+        @for (product of products; track product.id) {
+        <div
+          class="flex gap-6 p-4 border border-surface-container-high rounded-xl hover:shadow-md transition-shadow group">
+          <!-- Image -->
+          <div [routerLink]="['/products', product.slug]"
+            class="w-48 aspect-[4/5] flex-shrink-0 rounded-lg overflow-hidden relative bg-surface-container cursor-pointer">
+            <img [src]="product.images | primaryImage" (error)="onImageError($event)" [alt]="product.name"
+              class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+          </div>
 
-                  <p class="text-on-surface-variant text-sm line-clamp-3">
-                    {{ product.description }}
-                  </p>
-                </div>
-
-                <div class="flex items-center gap-4 mt-6">
-                  <button (click)="addToCart($event, product)" [disabled]="product.stock === 0" class="bg-primary text-on-primary px-8 py-3 rounded-lg font-label-md hover:opacity-90 transition-all active:scale-95 shadow-lg shadow-primary/20 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-                    <span class="material-symbols-outlined text-sm">shopping_cart</span>
-                    Add to Cart
-                  </button>
-                  <button (click)="showComingSoon('Wishlist')" class="p-3 rounded-lg border border-outline text-on-surface-variant hover:text-primary hover:border-primary transition-colors">
-                    <span class="material-symbols-outlined">favorite</span>
-                  </button>
+          <!-- Content -->
+          <div class="flex-1 flex flex-col justify-between py-2">
+            <div>
+              <div class="flex justify-between items-start mb-2">
+                <h3 [routerLink]="['/products', product.slug]"
+                  class="text-xl font-bold text-on-surface cursor-pointer hover:text-primary transition-colors">{{
+                  product.name }}</h3>
+                <div class="text-right">
+                  @if (product.discount_price && +product.discount_price < +product.price) { <p
+                    class="text-primary font-bold text-lg">{{ product.discount_price | currency }}</p>
+                    <p class="text-on-surface-variant line-through text-sm">{{ product.price | currency }}</p>
+                    } @else {
+                    <p class="text-primary font-bold text-lg">{{ product.price | currency }}</p>
+                    }
                 </div>
               </div>
+
+              <div class="flex items-center gap-2 mb-4">
+                <app-star-rating [rating]="0" [count]="0"></app-star-rating>
+                <span [class.bg-emerald-100]="product.stock > 0" [class.text-emerald-800]="product.stock > 0"
+                  [class.bg-red-100]="product.stock === 0" [class.text-red-800]="product.stock === 0"
+                  class="text-xs px-2 py-0.5 rounded">
+                  {{ product.stock > 0 ? 'In Stock' : 'Out of Stock' }}
+                </span>
+              </div>
+
+              <p class="text-on-surface-variant text-sm line-clamp-3">
+                {{ product.description }}
+              </p>
             </div>
-          }
 
-          @if (isLoading) {
-            @for (i of [1,2,3]; track i) {
-              <div class="flex gap-6 p-4 border border-surface-container-high rounded-xl animate-pulse">
-                <div class="w-48 aspect-[4/5] bg-surface-container rounded-lg"></div>
-                <div class="flex-1 py-2 space-y-4">
-                  <div class="h-6 bg-surface-container rounded w-1/3"></div>
-                  <div class="h-4 bg-surface-container rounded w-1/4"></div>
-                  <div class="h-20 bg-surface-container rounded w-full"></div>
-                  <div class="h-10 bg-surface-container rounded w-32 mt-auto"></div>
-                </div>
-              </div>
-            }
-          }
+            <div class="flex items-center gap-4 mt-6">
+              <button (click)="addToCart($event, product)" [disabled]="product.stock === 0"
+                class="bg-primary text-on-primary px-8 py-3 rounded-lg font-label-md hover:opacity-90 transition-all active:scale-95 shadow-lg shadow-primary/20 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                <span class="material-symbols-outlined text-sm">shopping_cart</span>
+                Add to Cart
+              </button>
+              <button (click)="toggleWishlist($event, product)" [class.text-red-500]="isWishlisted(product.id)"
+                [class.border-red-200]="isWishlisted(product.id)" [class.bg-red-50]="isWishlisted(product.id)"
+                class="p-3 rounded-lg border border-outline text-on-surface-variant hover:text-primary hover:border-primary transition-colors">
+                <span class="material-symbols-outlined"
+                  [style.font-variation-settings]="'\'FILL\' ' + (isWishlisted(product.id) ? 1 : 0)">
+                  favorite
+                </span>
+              </button>
+            </div>
+          </div>
         </div>
+        }
+
+        @if (isLoading) {
+        @for (i of [1,2,3]; track i) {
+        <div class="flex gap-6 p-4 border border-surface-container-high rounded-xl animate-pulse">
+          <div class="w-48 aspect-[4/5] bg-surface-container rounded-lg"></div>
+          <div class="flex-1 py-2 space-y-4">
+            <div class="h-6 bg-surface-container rounded w-1/3"></div>
+            <div class="h-4 bg-surface-container rounded w-1/4"></div>
+            <div class="h-20 bg-surface-container rounded w-full"></div>
+            <div class="h-10 bg-surface-container rounded w-32 mt-auto"></div>
+          </div>
+        </div>
+        }
+        }
+      </div>
       }
 
       <!-- Empty State -->
       @if (products.length === 0 && !isLoading && !hasError) {
-        <div class="py-20 flex flex-col items-center justify-center text-center bg-surface-container-low rounded-2xl">
-          <div class="w-48 h-48 bg-surface-container rounded-full flex items-center justify-center mb-6">
-            <span class="material-symbols-outlined text-6xl text-primary opacity-50">search_off</span>
-          </div>
-          <h3 class="text-2xl font-bold text-on-surface mb-2">No products found</h3>
-          <p class="text-on-surface-variant mb-8 max-w-md">
-            We couldn't find any products matching your current filters. Try adjusting your search criteria or clearing filters.
-          </p>
-          <button (click)="clearAllFilters()" class="bg-primary text-on-primary px-8 py-3 rounded-lg font-label-md hover:opacity-90 shadow-lg">
-            Clear Filters
-          </button>
+      <div class="py-20 flex flex-col items-center justify-center text-center bg-surface-container-low rounded-2xl">
+        <div class="w-48 h-48 bg-surface-container rounded-full flex items-center justify-center mb-6">
+          <span class="material-symbols-outlined text-6xl text-primary opacity-50">search_off</span>
         </div>
+        <h3 class="text-2xl font-bold text-on-surface mb-2">No products found</h3>
+        <p class="text-on-surface-variant mb-8 max-w-md">
+          We couldn't find any products matching your current filters. Try adjusting your search criteria or clearing
+          filters.
+        </p>
+        <button (click)="clearAllFilters()"
+          class="bg-primary text-on-primary px-8 py-3 rounded-lg font-label-md hover:opacity-90 shadow-lg">
+          Clear Filters
+        </button>
+      </div>
       }
 
       <!-- Pagination -->
       @if (totalPages > 1 && !hasError) {
-        <div class="mt-12 flex flex-col sm:flex-row items-center justify-between gap-6">
-          
-          <!-- Page Size Selector -->
-          <div class="flex items-center gap-2 text-sm text-on-surface-variant">
-            <span>Show</span>
-            <select 
-              [ngModel]="pageSize"
-              (ngModelChange)="onPageSizeChange($event)"
-              class="bg-surface-container rounded-lg border-none px-3 py-2 text-sm focus:ring-2 focus:ring-primary outline-none cursor-pointer text-on-surface"
-            >
-              @for (size of pageSizeOptions; track size) {
-                <option [ngValue]="size">{{ size }}</option>
-              }
-            </select>
-            <span>per page</span>
-          </div>
+      <div class="mt-12 flex flex-col sm:flex-row items-center justify-between gap-6">
 
-          <!-- Page Numbers -->
-          <nav class="flex items-center gap-1">
-            <!-- Previous -->
-            <button 
-              (click)="goToPage(page - 1)"
-              [disabled]="page === 1"
-              class="px-3 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed hover:bg-surface-container text-on-surface-variant"
-            >
-              <span class="material-symbols-outlined text-sm">chevron_left</span>
-            </button>
-
-            @for (p of getVisiblePages(); track $index) {
-              @if (p === -1) {
-                <span class="px-2 py-2 text-on-surface-variant text-sm">â€¦</span>
-              } @else {
-                <button 
-                  (click)="goToPage(p)"
-                  [class.bg-primary]="p === page"
-                  [class.text-on-primary]="p === page"
-                  [class.shadow-md]="p === page"
-                  [class.text-on-surface-variant]="p !== page"
-                  [class.hover:bg-surface-container]="p !== page"
-                  class="w-10 h-10 rounded-lg text-sm font-medium transition-all"
-                >
-                  {{ p }}
-                </button>
-              }
+        <!-- Page Size Selector -->
+        <div class="flex items-center gap-2 text-sm text-on-surface-variant">
+          <span>Show</span>
+          <select [ngModel]="pageSize" (ngModelChange)="onPageSizeChange($event)"
+            class="bg-surface-container rounded-lg border-none px-3 py-2 text-sm focus:ring-2 focus:ring-primary outline-none cursor-pointer text-on-surface">
+            @for (size of pageSizeOptions; track size) {
+            <option [ngValue]="size">{{ size }}</option>
             }
-
-            <!-- Next -->
-            <button 
-              (click)="goToPage(page + 1)"
-              [disabled]="page === totalPages"
-              class="px-3 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed hover:bg-surface-container text-on-surface-variant"
-            >
-              <span class="material-symbols-outlined text-sm">chevron_right</span>
-            </button>
-          </nav>
-
-          <!-- Showing text (mobile) -->
-          <p class="text-sm text-on-surface-variant">
-            Page {{ page }} of {{ totalPages }}
-          </p>
+          </select>
+          <span>per page</span>
         </div>
+
+        <!-- Page Numbers -->
+        <nav class="flex items-center gap-1">
+          <!-- Previous -->
+          <button (click)="goToPage(page - 1)" [disabled]="page === 1"
+            class="px-3 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed hover:bg-surface-container text-on-surface-variant">
+            <span class="material-symbols-outlined text-sm">chevron_left</span>
+          </button>
+
+          @for (p of getVisiblePages(); track $index) {
+          @if (p === -1) {
+          <span class="px-2 py-2 text-on-surface-variant text-sm">â€¦</span>
+          } @else {
+          <button (click)="goToPage(p)" [class.bg-primary]="p === page" [class.text-on-primary]="p === page"
+            [class.shadow-md]="p === page" [class.text-on-surface-variant]="p !== page"
+            [class.hover:bg-surface-container]="p !== page"
+            class="w-10 h-10 rounded-lg text-sm font-medium transition-all">
+            {{ p }}
+          </button>
+          }
+          }
+
+          <!-- Next -->
+          <button (click)="goToPage(page + 1)" [disabled]="page === totalPages"
+            class="px-3 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed hover:bg-surface-container text-on-surface-variant">
+            <span class="material-symbols-outlined text-sm">chevron_right</span>
+          </button>
+        </nav>
+
+        <!-- Showing text (mobile) -->
+        <p class="text-sm text-on-surface-variant">
+          Page {{ page }} of {{ totalPages }}
+        </p>
+      </div>
       }
 
     </div>
     }
   </div>
 </div>
-
-

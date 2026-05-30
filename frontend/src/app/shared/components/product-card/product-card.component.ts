@@ -1,4 +1,4 @@
-import { Component, Input, HostBinding, inject } from '@angular/core';
+import { Component, Input, HostBinding, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Product } from '../../../core/models/product.model';
@@ -7,6 +7,9 @@ import { PrimaryImagePipe } from '../../../shared/pipes/primary-image-pipe';
 import { StarRatingComponent } from '../../../shared/components/star-rating/star-rating';
 import { CartActionsService } from '../../../core/services/cart-actions.service';
 import { UiService } from '../../../core/services/ui.service';
+import { WishlistService } from '../../../core/services/wishlist.service';
+import { AuthService } from '../../../core/services/auth';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-product-card',
@@ -20,10 +23,15 @@ export class ProductCardComponent {
   private cartActions = inject(CartActionsService);
   private uiService = inject(UiService);
   private configService = inject(ConfigService);
+  private wishlistService = inject(WishlistService);
+  private authService = inject(AuthService);
+  private snackBar = inject(MatSnackBar);
 
   @HostBinding('class') get hostClasses() {
     return 'block cursor-pointer group';
   }
+
+  isInWishlist = computed(() => this.wishlistService.isWishlisted(this.product.id));
 
   get hasDiscount(): boolean {
     return !!(
@@ -41,7 +49,26 @@ export class ProductCardComponent {
   toggleWishlist(event: Event): void {
     event.stopPropagation();
     event.preventDefault();
-    this.uiService.showComingSoon('Wishlist');
+
+    if (!this.authService.isAuthenticated()) {
+      this.snackBar.open('Please login to manage your wishlist', 'Login', { duration: 3000 })
+        .onAction().subscribe(() => {
+          // You might want to redirect to login here
+        });
+      return;
+    }
+
+    if (this.isInWishlist()) {
+      this.wishlistService.removeFromWishlistByProductId(this.product.id).subscribe({
+        next: () => this.snackBar.open('Removed from wishlist', 'OK', { duration: 2000 }),
+        error: () => this.snackBar.open('Failed to remove from wishlist', 'OK', { duration: 2000 })
+      });
+    } else {
+      this.wishlistService.addToWishlist(this.product.id).subscribe({
+        next: () => this.snackBar.open('Added to wishlist', 'OK', { duration: 2000 }),
+        error: () => this.snackBar.open('Failed to add to wishlist', 'OK', { duration: 2000 })
+      });
+    }
   }
 
   onImageError(event: Event): void {

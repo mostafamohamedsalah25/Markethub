@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
-from .models import Category, Product, ProductImage
+from .models import Category, Product, ProductImage, ProductReview, WishlistItem
+from orders.models import OrderItem
 
 class CategorySerializer(serializers.ModelSerializer):
     name = serializers.CharField(
@@ -51,9 +52,9 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'seller', 'category', 'name', 'slug', 'description',
             'price', 'discount_price', 'stock', 'is_active',
-            'images', 'uploaded_images', 'created_at'
+            'images', 'uploaded_images', 'average_rating', 'review_count', 'created_at'
         ]
-        read_only_fields = ['id', 'seller', 'created_at']
+        read_only_fields = ['id', 'seller', 'average_rating', 'review_count', 'created_at']
 
     def validate_price(self, value):
         if value <= 0:
@@ -94,3 +95,29 @@ class ProductSerializer(serializers.ModelSerializer):
                 order=index
             )
         return product
+
+
+class ProductReviewSerializer(serializers.ModelSerializer):
+    user_email = serializers.EmailField(source='user.email', read_only=True)
+    is_verified_purchase = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ProductReview
+        fields = ['id', 'product', 'user', 'user_email', 'rating', 'comment', 'is_verified_purchase', 'created_at']
+        read_only_fields = ['id', 'user', 'created_at']
+
+    def get_is_verified_purchase(self, obj):
+        return OrderItem.objects.filter(
+            order__buyer=obj.user,
+            product=obj.product,
+            order__status='delivered'
+        ).exists()
+
+
+class WishlistItemSerializer(serializers.ModelSerializer):
+    product_details = ProductSerializer(source='product', read_only=True)
+
+    class Meta:
+        model = WishlistItem
+        fields = ['id', 'product', 'product_details', 'created_at']
+        read_only_fields = ['id', 'created_at']

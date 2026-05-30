@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.signing import TimestampSigner, SignatureExpired, BadSignature
-from rest_framework import status, generics, permissions, views
+from rest_framework import status, generics, permissions, views, viewsets
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -12,11 +12,14 @@ from .serializers import (
     RegisterSerializer, 
     CustomTokenObtainPairSerializer, 
     UserProfileSerializer,
-    AdminUserSerializer
+    AdminUserSerializer,
+    SellerProfileSerializer
 )
 from .permissions import IsAdmin
 from .tasks import send_verification_email
 from .mixins import ApiResponseMixin
+
+from .models import SellerProfile
 
 User = get_user_model()
 
@@ -202,3 +205,30 @@ class GoogleLoginView(ApiResponseMixin, views.APIView):
             return self.error_response(message=f"Invalid Google token: {str(e)}")
         except Exception as e:
             return self.error_response(message=f"Google authentication failed: {str(e)}")
+
+
+class SellerProfileViewSet(ApiResponseMixin, viewsets.ModelViewSet):
+    queryset = SellerProfile.objects.all()
+    serializer_class = SellerProfileSerializer
+
+    def get_permissions(self):
+        if self.action in ['update', 'partial_update']:
+            return [permissions.IsAuthenticated()]
+        return [permissions.AllowAny()]
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return self.success_response(data=serializer.data)
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.user != request.user:
+            return self.error_response(message="You do not have permission to update this profile", status_code=status.HTTP_403_FORBIDDEN)
+        
+        partial = kwargs.pop('partial', False)
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        if serializer.is_valid():
+            serializer.save()
+            return self.success_response(data=serializer.data, message="Seller profile updated successfully")
+        return self.error_response(message="Update failed", data=serializer.errors)

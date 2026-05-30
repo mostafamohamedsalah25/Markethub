@@ -1,6 +1,7 @@
 export type Role = 'customer' | 'seller' | 'admin';
 
 export interface SellerProfile {
+  id: string | number;
   store_name: string;
   description: string | null;
   is_approved: boolean;

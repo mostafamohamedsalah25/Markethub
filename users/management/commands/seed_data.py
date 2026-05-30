@@ -223,6 +223,7 @@ class Command(BaseCommand):
                 )
                 if created:
                     count += 1
+            product.update_rating()
         self.stdout.write(f'  Reviews: {ProductReview.objects.count()} total ({count} new)')
 
     def _seed_wishlists(self, users: dict[str, User], products: list[Product]):

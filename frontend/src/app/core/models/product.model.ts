@@ -17,5 +17,7 @@ export interface Product {
   category: number;
   seller: number;
   images: ProductImage[];
+  average_rating: number;
+  review_count: number;
   created_at: string;
 }

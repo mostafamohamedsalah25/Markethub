@@ -1,11 +1,13 @@
-from rest_framework import viewsets, filters, status
+from rest_framework import viewsets, filters, status, serializers
 from rest_framework.response import Response
 from django.db.models import QuerySet, Q
 from django_filters.rest_framework import DjangoFilterBackend
-from .models import Category, Product
-from .serializers import CategorySerializer, ProductSerializer
-from .permissions import IsAdminOrReadOnly, IsSellerOwnerOrAdmin
+from .models import Category, Product, ProductReview, WishlistItem
+from .serializers import CategorySerializer, ProductSerializer, ProductReviewSerializer, WishlistItemSerializer
+from .permissions import IsAdminOrReadOnly, IsSellerOwnerOrAdmin, IsOwnerOrReadOnly
 from .filters import ProductFilter
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from orders.models import OrderItem
 
 # Create your views here.
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -44,4 +46,57 @@ class ProductViewSet(viewsets.ModelViewSet):
         instance.is_active = False
         instance.save()
         return Response({"message": "Product deactivated successfully."}, status=status.HTTP_204_NO_CONTENT)
+
+
+class ProductReviewViewSet(viewsets.ModelViewSet):
+    queryset = ProductReview.objects.all()
+    serializer_class = ProductReviewSerializer
+
+    def get_permissions(self):
+        if self.action in ['create']:
+            return [IsAuthenticated()]
+        if self.action in ['update', 'partial_update', 'destroy']:
+            return [IsOwnerOrReadOnly()]
+        return [IsAuthenticatedOrReadOnly()]
+
+    def perform_create(self, serializer):
+        product_id = self.request.data.get('product')
+        user = self.request.user
+        
+        # Check if user has already reviewed this product
+        if ProductReview.objects.filter(product_id=product_id, user=user).exists():
+            raise serializers.ValidationError("You have already reviewed this product.")
+
+        # Check for verified purchase
+        has_purchased = OrderItem.objects.filter(
+            order__buyer=user,
+            product_id=product_id,
+            order__status='delivered'
+        ).exists()
+        
+        if not has_purchased:
+            raise serializers.ValidationError("You can only review products you have purchased and received.")
+
+        instance = serializer.save(user=user)
+        instance.product.update_rating()
+
+    def perform_update(self, serializer):
+        instance = serializer.save()
+        instance.product.update_rating()
+
+    def perform_destroy(self, instance):
+        product = instance.product
+        instance.delete()
+        product.update_rating()
+
+
+class WishlistItemViewSet(viewsets.ModelViewSet):
+    serializer_class = WishlistItemSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return WishlistItem.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 

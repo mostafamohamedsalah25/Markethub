@@ -9,6 +9,7 @@ import { AuthService } from '../../../core/services/auth';
 import { MatDividerModule } from '@angular/material/divider';
 import { SearchBarComponent } from '../search-bar/search-bar.component';
 import { UiService } from '../../../core/services/ui.service';
+import { NotificationService, Notification } from '../../../core/services/notification.service';
 import { ConfigService } from '../../../core/services/config';
 
 @Component({
@@ -29,9 +30,10 @@ import { ConfigService } from '../../../core/services/config';
   styleUrl: './navbar.scss',
 })
 export class NavbarComponent {
-  authService = inject(AuthService);
+  public authService = inject(AuthService);
   private uiService = inject(UiService);
   private configService = inject(ConfigService);
+  public notificationService = inject(NotificationService);
 
   readonly navLinks = this.configService.navLinks;
 
@@ -42,6 +44,23 @@ export class NavbarComponent {
     const user = this.currentUser();
     return user && (user.role === 'seller' || user.role === 'admin');
   });
+
+  unreadNotifications = this.notificationService.unreadCount;
+  notifications = this.notificationService.notifications;
+
+  ngOnInit(): void {
+    if (this.isAuthenticated()) {
+      this.notificationService.fetchNotifications();
+    }
+  }
+
+  markAsRead(notification: Notification): void {
+    this.notificationService.markAsRead(notification.id).subscribe();
+  }
+
+  markAllAsRead(): void {
+    this.notificationService.markAllAsRead().subscribe();
+  }
 
   logout(): void {
     this.authService.logout();

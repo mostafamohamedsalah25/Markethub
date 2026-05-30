@@ -7,9 +7,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatButtonModule } from '@angular/material/button';
 
-import { OrdersService } from '../../../core/services/orders.service';
-import { PaymentService } from '../../../core/services/payment.service';
 import { ProductService } from '../../../core/services/product.service';
+import { SellerProfileService } from '../../../core/services/seller-profile.service';
+import { AuthService } from '../../../core/services/auth';
 
 @Component({
   selector: 'app-seller-overview',
@@ -19,41 +19,40 @@ import { ProductService } from '../../../core/services/product.service';
   styleUrl: './seller-overview.scss',
 })
 export class SellerOverviewComponent implements OnInit {
-  private ordersService = inject(OrdersService);
-  private paymentService = inject(PaymentService);
-  private productService = inject(ProductService);
+  private sellerProfileService = inject(SellerProfileService);
+  private authService = inject(AuthService);
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly orderCount = signal(0);
   readonly productCount = signal(0);
-  readonly revenue = signal(0);
-  readonly paidCount = signal(0);
-  readonly pendingPayments = signal(0);
+  readonly salesCount = signal(0);
+  readonly averageRating = signal(0);
 
   ngOnInit(): void {
     this.load();
   }
 
   load(): void {
+    const user = this.authService.currentUser();
+    const profileId = user?.seller_profile?.id;
+
+    if (!profileId) {
+      this.error.set('Seller profile not found.');
+      this.loading.set(false);
+      return;
+    }
+
     this.loading.set(true);
     this.error.set(null);
-    forkJoin({
-      orders: this.ordersService.getSellerOrders().pipe(catchError(() => of([]))),
-      payments: this.paymentService.getHistory().pipe(catchError(() => of([]))),
-      products: this.productService.getSellerProducts().pipe(catchError(() => of([]))),
-    }).subscribe({
-      next: ({ orders, payments, products }) => {
-        this.orderCount.set(orders.length);
-        const plist = Array.isArray(products) ? products : (products as { results?: unknown[] }).results ?? [];
-        this.productCount.set(plist.length);
-        const mine = new Set(orders.map((o) => o.id));
-        const relevant = payments.filter((p) => mine.has(p.order_id));
-        const ok = relevant.filter((p) => p.status === 'succeeded');
-        const rev = ok.reduce((s, p) => s + parseFloat(p.amount || '0'), 0);
-        this.revenue.set(Math.round(rev * 100) / 100);
-        this.paidCount.set(ok.length);
-        this.pendingPayments.set(relevant.filter((p) => p.status === 'pending' || p.status === 'processing').length);
+
+    this.sellerProfileService.getProfile(profileId).subscribe({
+      next: (res: any) => {
+        const stats = res.data || res;
+        this.productCount.set(stats.total_products);
+        this.orderCount.set(stats.total_orders);
+        this.salesCount.set(stats.total_sales);
+        this.averageRating.set(stats.average_rating);
         this.loading.set(false);
       },
       error: () => {
