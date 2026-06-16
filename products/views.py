@@ -1,4 +1,5 @@
 from rest_framework import viewsets, filters, status, serializers
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db.models import QuerySet, Q
 from django_filters.rest_framework import DjangoFilterBackend
@@ -100,3 +101,7 @@ class WishlistItemViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
+    @action(detail=False, methods=['delete'])
+    def clear(self, request):
+        WishlistItem.objects.filter(user=request.user).delete()
+        return Response({"message": "Wishlist cleared successfully."}, status=status.HTTP_204_NO_CONTENT)

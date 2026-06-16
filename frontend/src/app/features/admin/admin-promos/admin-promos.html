@@ -1,89 +1,98 @@
-<div class="max-w-7xl mx-auto px-4 py-6">
-  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+<div class="max-w-[1600px] mx-auto px-6 py-8 animate-fade-in">
+  
+  <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
     <div>
-      <h1 class="text-2xl font-bold text-slate-900">Promo codes</h1>
-      <p class="text-slate-600 text-sm mt-1">Create and manage discount campaigns</p>
+      <h1 class="text-3xl font-extrabold text-on-surface tracking-tight">Promo Codes</h1>
+      <p class="text-sm font-medium text-on-surface-variant mt-1 uppercase tracking-widest">Create and manage discounts</p>
     </div>
-    <button mat-flat-button color="primary" (click)="openCreate()">
-      <mat-icon>add</mat-icon>
-      New promo
+    <button class="mh-btn mh-btn-brand px-8 shadow-lg shadow-primary/20" (click)="openCreate()">
+      <span class="material-symbols-outlined text-[18px]">add</span> New Promo
     </button>
   </div>
 
   @if (loading()) {
-    <div class="flex justify-center py-20">
-      <mat-spinner diameter="40"></mat-spinner>
+    <div class="flex flex-col gap-3">
+      @for (i of [1,2,3]; track i) { <div class="h-16 mh-skeleton rounded-2xl"></div> }
     </div>
   } @else if (promos().length === 0) {
-    <div class="rounded-xl border border-dashed border-slate-200 bg-white p-12 text-center text-slate-600">
-      No promo codes yet. Create one to get started.
+    <div class="py-20 flex flex-col items-center justify-center text-center bg-surface-container-low border border-dashed border-outline-variant rounded-[2rem]">
+      <div class="w-16 h-16 bg-surface-container rounded-full flex items-center justify-center mb-4">
+        <span class="material-symbols-outlined text-3xl text-on-surface-variant opacity-50">local_offer</span>
+      </div>
+      <h3 class="text-xl font-bold text-on-surface mb-1">No promo codes yet</h3>
+      <p class="text-sm font-medium text-on-surface-variant mb-6">Create your first campaign to boost sales.</p>
+      <button class="mh-btn mh-btn-outline" (click)="openCreate()">Create Promo</button>
     </div>
   } @else {
-    <div class="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
-      <table mat-table [dataSource]="pagedPromos()" class="w-full">
-        <ng-container matColumnDef="code">
-          <th mat-header-cell *matHeaderCellDef>Code</th>
-          <td mat-cell *matCellDef="let p">
-            <span class="font-semibold text-slate-900">{{ p.code }}</span>
-          </td>
-        </ng-container>
-
-        <ng-container matColumnDef="type">
-          <th mat-header-cell *matHeaderCellDef>Type</th>
-          <td mat-cell *matCellDef="let p">{{ p.discount_type }}</td>
-        </ng-container>
-
-        <ng-container matColumnDef="value">
-          <th mat-header-cell *matHeaderCellDef>Value</th>
-          <td mat-cell *matCellDef="let p">{{ p.value }}</td>
-        </ng-container>
-
-        <ng-container matColumnDef="active">
-          <th mat-header-cell *matHeaderCellDef>Active</th>
-          <td mat-cell *matCellDef="let p">
-            <mat-slide-toggle [checked]="p.is_active" (change)="toggleActive(p, $event.checked)">
-            </mat-slide-toggle>
-          </td>
-        </ng-container>
-
-        <ng-container matColumnDef="usage">
-          <th mat-header-cell *matHeaderCellDef>Usage</th>
-          <td mat-cell *matCellDef="let p">
-            {{ p.used_count }}
-            @if (p.max_uses != null) {
-              <span class="text-slate-500"> / {{ p.max_uses }}</span>
+    <div class="bg-surface border border-outline rounded-3xl overflow-hidden shadow-sm">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-surface-container-low text-[11px] font-extrabold uppercase tracking-widest text-on-surface-variant border-b border-outline">
+              <th class="px-6 py-4 font-extrabold">Code</th>
+              <th class="px-6 py-4 font-extrabold">Type</th>
+              <th class="px-6 py-4 font-extrabold">Value</th>
+              <th class="px-6 py-4 font-extrabold">Active</th>
+              <th class="px-6 py-4 font-extrabold">Usage</th>
+              <th class="px-6 py-4 font-extrabold">Min Order</th>
+              <th class="px-6 py-4 font-extrabold text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-outline">
+            @for (p of pagedPromos(); track p.id) {
+              <tr class="hover:bg-surface-hover transition-colors group">
+                <td class="px-6 py-4 text-sm font-extrabold text-primary tracking-wide">{{ p.code }}</td>
+                <td class="px-6 py-4 text-sm font-bold text-on-surface-variant capitalize">{{ p.discount_type }}</td>
+                <td class="px-6 py-4 text-sm font-extrabold text-on-surface">
+                  {{ p.discount_type === 'percentage' ? p.value + '%' : '$' + p.value }}
+                </td>
+                <td class="px-6 py-4">
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" class="sr-only peer" [checked]="p.is_active" (change)="toggleActive(p, $event)">
+                    <div class="w-10 h-5.5 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-[18px] peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-outline after:border after:rounded-full after:h-4.5 after:w-4.5 after:transition-all peer-checked:bg-primary"></div>
+                  </label>
+                </td>
+                <td class="px-6 py-4 text-sm font-medium text-on-surface">
+                  {{ p.used_count }} <span class="text-on-surface-variant opacity-60">/ {{ p.max_uses != null ? p.max_uses : '∞' }}</span>
+                </td>
+                <td class="px-6 py-4 text-sm font-medium text-on-surface">${{ p.minimum_order_amount }}</td>
+                <td class="px-6 py-4 text-right">
+                  <div class="flex items-center justify-end gap-2">
+                    <button class="w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-surface-container-highest hover:text-primary transition-colors" (click)="edit(p)" title="Edit">
+                      <span class="material-symbols-outlined text-[18px]">edit</span>
+                    </button>
+                    <button class="w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-red-50 hover:text-red-500 transition-colors" (click)="remove(p)" title="Delete">
+                      <span class="material-symbols-outlined text-[18px]">delete</span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
             }
-          </td>
-        </ng-container>
+          </tbody>
+        </table>
+      </div>
 
-        <ng-container matColumnDef="min">
-          <th mat-header-cell *matHeaderCellDef>Min order</th>
-          <td mat-cell *matCellDef="let p">{{ p.minimum_order_amount }}</td>
-        </ng-container>
-
-        <ng-container matColumnDef="actions">
-          <th mat-header-cell *matHeaderCellDef class="!text-right">Actions</th>
-          <td mat-cell *matCellDef="let p" class="!text-right whitespace-nowrap">
-            <button mat-icon-button (click)="edit(p)" matTooltip="Edit">
-              <mat-icon>edit</mat-icon>
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-t border-outline bg-surface-container-lowest">
+        <div class="flex items-center gap-3">
+          <span class="text-xs font-extrabold uppercase tracking-widest text-on-surface-variant">Rows per page:</span>
+          <select [ngModel]="pageSize()" (ngModelChange)="changePageSize($event)" class="bg-surface border border-outline rounded-lg px-2 py-1 text-xs font-bold outline-none cursor-pointer">
+            @for (size of pageSizeOptions; track size) { <option [value]="size">{{ size }}</option> }
+          </select>
+        </div>
+        <div class="flex items-center gap-4">
+          <span class="text-xs font-extrabold tracking-widest text-on-surface-variant">
+            {{ (pageIndex() * pageSize()) + 1 }} - {{ Math.min((pageIndex() + 1) * pageSize(), promos().length) }} of {{ promos().length }}
+          </span>
+          <div class="flex items-center gap-1">
+            <button (click)="goToPage(pageIndex() - 1)" [disabled]="pageIndex() === 0" class="w-8 h-8 rounded-lg border border-outline text-on-surface-variant hover:bg-surface-hover hover:text-on-surface disabled:opacity-30 flex items-center justify-center transition-all">
+              <span class="material-symbols-outlined text-[18px]">chevron_left</span>
             </button>
-            <button mat-icon-button color="warn" (click)="remove(p)" matTooltip="Delete">
-              <mat-icon>delete</mat-icon>
+            <button (click)="goToPage(pageIndex() + 1)" [disabled]="pageIndex() >= totalPages() - 1" class="w-8 h-8 rounded-lg border border-outline text-on-surface-variant hover:bg-surface-hover hover:text-on-surface disabled:opacity-30 flex items-center justify-center transition-all">
+              <span class="material-symbols-outlined text-[18px]">chevron_right</span>
             </button>
-          </td>
-        </ng-container>
-
-        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-      </table>
-      <mat-paginator
-        [length]="promos().length"
-        [pageIndex]="pageIndex()"
-        [pageSize]="pageSize()"
-        [pageSizeOptions]="[5, 10, 25]"
-        (page)="onPage($event)"
-      >
-      </mat-paginator>
+          </div>
+        </div>
+      </div>
     </div>
   }
 </div>

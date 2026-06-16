@@ -2,10 +2,6 @@ import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { catchError, forkJoin, of } from 'rxjs';
-import { MatTableModule } from '@angular/material/table';
-import { MatSelectModule } from '@angular/material/select';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
 
 import { OrdersService, Order } from '../../../core/services/orders.service';
@@ -16,16 +12,8 @@ import { UiService } from '../../../core/services/ui.service';
 @Component({
   selector: 'app-seller-orders',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    MatTableModule,
-    MatSelectModule,
-    MatProgressSpinnerModule,
-    MatIconModule,
-  ],
+  imports: [CommonModule, FormsModule],
   templateUrl: './seller-orders.html',
-  styleUrl: './seller-orders.scss',
 })
 export class SellerOrdersComponent implements OnInit {
   private ordersService = inject(OrdersService);
@@ -40,14 +28,6 @@ export class SellerOrdersComponent implements OnInit {
   readonly paymentByOrder = signal<Map<number, PaymentRecord>>(new Map());
 
   readonly statusOptions = ['pending', 'accepted', 'rejected', 'shipped', 'delivered', 'cancelled'];
-
-  readonly displayedColumns = computed(() => {
-    const base = ['id', 'customer', 'items', 'total', 'payment', 'date', 'status'];
-    if (this.isAdmin()) {
-      return ['id', 'seller', 'customer', 'items', 'total', 'payment', 'date', 'status'];
-    }
-    return base;
-  });
 
   ngOnInit(): void {
     this.load();
@@ -97,15 +77,27 @@ export class SellerOrdersComponent implements OnInit {
 
   paymentClass(orderId: number): string {
     const p = this.paymentByOrder().get(orderId);
-    if (!p) return 'text-slate-400';
+    if (!p) return 'text-on-surface-variant font-medium opacity-50';
     const map: Record<string, string> = {
-      succeeded: 'text-emerald-700 font-semibold',
-      failed: 'text-red-600 font-semibold',
-      pending: 'text-amber-700',
-      processing: 'text-blue-700',
-      refunded: 'text-slate-600',
+      succeeded: 'text-emerald-600 font-extrabold',
+      failed: 'text-error font-extrabold',
+      pending: 'text-amber-600 font-extrabold',
+      processing: 'text-blue-600 font-extrabold',
+      refunded: 'text-on-surface-variant font-bold',
     };
-    return map[p.status] ?? 'text-slate-700';
+    return map[p.status] ?? 'text-on-surface-variant font-bold';
+  }
+
+  orderStatusClass(status: string): string {
+    const map: Record<string, string> = {
+      pending: 'bg-amber-50 text-amber-700 border-amber-200 focus:border-amber-400',
+      accepted: 'bg-blue-50 text-blue-700 border-blue-200 focus:border-blue-400',
+      rejected: 'bg-red-50 text-red-700 border-red-200 focus:border-red-400',
+      shipped: 'bg-indigo-50 text-indigo-700 border-indigo-200 focus:border-indigo-400',
+      delivered: 'bg-emerald-50 text-emerald-700 border-emerald-200 focus:border-emerald-400',
+      cancelled: 'bg-surface-container text-on-surface-variant border-outline focus:border-outline-variant',
+    };
+    return map[status] ?? 'bg-surface text-on-surface border-outline';
   }
 
   itemsSummary(order: Order): string {

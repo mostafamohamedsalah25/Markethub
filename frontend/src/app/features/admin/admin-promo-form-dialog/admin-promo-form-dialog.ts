@@ -1,16 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {
-  FormBuilder,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
-import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { MatButtonModule } from '@angular/material/button';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 import { PromoCode, PromoDiscountType } from '../../../core/models/promo.model';
 import { PromoService } from '../../../core/services/promo.service';
@@ -23,16 +14,7 @@ export interface AdminPromoFormDialogData {
 @Component({
   selector: 'app-admin-promo-form-dialog',
   standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    MatDialogModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule,
-    MatButtonModule,
-    MatSlideToggleModule,
-  ],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './admin-promo-form-dialog.html',
 })
 export class AdminPromoFormDialogComponent {
@@ -52,12 +34,8 @@ export class AdminPromoFormDialogComponent {
     is_active: [this.data.promo?.is_active ?? true],
     max_uses: [this.data.promo?.max_uses != null ? String(this.data.promo.max_uses) : ''],
     minimum_order_amount: [this.data.promo?.minimum_order_amount ?? '0', Validators.required],
-    starts_at: [
-      this.data.promo?.starts_at ? this.data.promo.starts_at.slice(0, 16) : '',
-    ],
-    expires_at: [
-      this.data.promo?.expires_at ? this.data.promo.expires_at.slice(0, 16) : '',
-    ],
+    starts_at: [this.data.promo?.starts_at ? this.data.promo.starts_at.slice(0, 16) : ''],
+    expires_at: [this.data.promo?.expires_at ? this.data.promo.expires_at.slice(0, 16) : ''],
   });
 
   save(): void {
@@ -78,10 +56,7 @@ export class AdminPromoFormDialogComponent {
       expires_at: v.expires_at ? new Date(v.expires_at).toISOString() : null,
     };
 
-    if (
-      payload.discount_type === 'percentage' &&
-      parseFloat(payload.value) > 100
-    ) {
+    if (payload.discount_type === 'percentage' && parseFloat(payload.value) > 100) {
       this.ui.showInfo('Percentage cannot exceed 100.');
       return;
     }

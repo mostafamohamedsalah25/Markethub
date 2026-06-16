@@ -1,80 +1,104 @@
-<div class="min-h-screen bg-gray-100 flex">
-  <aside class="w-64 bg-slate-900 text-white flex flex-col shrink-0">
-    <div class="p-6">
-      <h2 class="text-xl font-bold text-indigo-400 flex items-center gap-2">
-        <mat-icon class="text-indigo-400">dashboard</mat-icon>
-        {{ router.url.startsWith('/admin') ? 'Admin' : 'Seller' }} panel
+<!-- Main Dashboard Layout (No Scrolling on Body) -->
+<div class="h-screen flex overflow-hidden bg-surface-alt">
+  
+  <!-- Mobile Sidebar Overlay -->
+  @if (isSidebarOpen()) {
+    <div class="fixed inset-0 bg-slate-950/60 z-40 lg:hidden backdrop-blur-sm animate-fade-in" (click)="toggleSidebar()"></div>
+  }
+
+  <!-- Premium Sidebar (Fixed on mobile, static on desktop) -->
+  <aside class="fixed inset-y-0 left-0 z-50 w-72 bg-slate-950 border-r border-slate-800 flex flex-col shadow-2xl transition-transform duration-300 ease-in-out lg:static lg:translate-x-0"
+         [class.translate-x-0]="isSidebarOpen()"
+         [class.-translate-x-full]="!isSidebarOpen()">
+         
+    <div class="p-6 flex items-center justify-between">
+      <h2 class="text-xl font-extrabold text-white tracking-tight flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-primary/20 text-primary flex items-center justify-center border border-primary/20">
+          <span class="material-symbols-outlined text-[20px]">dashboard</span>
+        </div>
+        {{ router.url.startsWith('/admin') ? 'Admin Panel' : 'Seller Panel' }}
       </h2>
+      <!-- Mobile Close Button -->
+      <button class="lg:hidden w-8 h-8 rounded-lg bg-slate-800 text-slate-400 flex items-center justify-center" (click)="toggleSidebar()">
+        <span class="material-symbols-outlined text-[20px]">close</span>
+      </button>
     </div>
-    <nav class="flex-1 px-3 space-y-1 pb-6">
-      <a
-        [routerLink]="getLink('/overview')"
-        routerLinkActive="bg-slate-800 text-indigo-400"
-        [routerLinkActiveOptions]="{ exact: true }"
-        class="flex items-center gap-3 px-3 py-3 text-slate-300 hover:bg-slate-800 hover:text-indigo-400 rounded-lg transition-colors"
-      >
-        <mat-icon class="!text-xl">insights</mat-icon>
-        Overview
+    
+    <nav class="flex-1 px-4 space-y-2 pb-6 overflow-y-auto custom-scrollbar">
+      <a [routerLink]="getLink('/overview')" routerLinkActive="bg-slate-800/50 text-primary border-primary" [routerLinkActiveOptions]="{ exact: true }"
+         class="flex items-center gap-3 px-4 py-3.5 text-slate-400 border border-transparent hover:bg-slate-800/30 hover:text-slate-200 rounded-2xl transition-all font-semibold text-sm"
+         (click)="isSidebarOpen.set(false)">
+        <span class="material-symbols-outlined text-[20px]">insights</span> Overview
       </a>
-      <a
-        [routerLink]="getLink('/products')"
-        routerLinkActive="bg-slate-800 text-indigo-400"
-        class="flex items-center gap-3 px-3 py-3 text-slate-300 hover:bg-slate-800 hover:text-indigo-400 rounded-lg transition-colors"
-      >
-        <mat-icon class="!text-xl">inventory_2</mat-icon>
-        Products
+      
+      <a [routerLink]="getLink('/products')" routerLinkActive="bg-slate-800/50 text-primary border-primary"
+         class="flex items-center gap-3 px-4 py-3.5 text-slate-400 border border-transparent hover:bg-slate-800/30 hover:text-slate-200 rounded-2xl transition-all font-semibold text-sm"
+         (click)="isSidebarOpen.set(false)">
+        <span class="material-symbols-outlined text-[20px]">inventory_2</span> Products
       </a>
-      <a
-        [routerLink]="getLink('/orders')"
-        routerLinkActive="bg-slate-800 text-indigo-400"
-        class="flex items-center gap-3 px-3 py-3 text-slate-300 hover:bg-slate-800 hover:text-indigo-400 rounded-lg transition-colors"
-      >
-        <mat-icon class="!text-xl">receipt_long</mat-icon>
-        Orders
+      
+      <a [routerLink]="getLink('/orders')" routerLinkActive="bg-slate-800/50 text-primary border-primary"
+         class="flex items-center gap-3 px-4 py-3.5 text-slate-400 border border-transparent hover:bg-slate-800/30 hover:text-slate-200 rounded-2xl transition-all font-semibold text-sm"
+         (click)="isSidebarOpen.set(false)">
+        <span class="material-symbols-outlined text-[20px]">receipt_long</span> Orders
       </a>
 
       @if (router.url.startsWith('/seller')) {
-      <a
-        [routerLink]="getLink('/revenue')"
-        routerLinkActive="bg-slate-800 text-indigo-400"
-        class="flex items-center gap-3 px-3 py-3 text-slate-300 hover:bg-slate-800 hover:text-indigo-400 rounded-lg transition-colors"
-      >
-        <mat-icon class="!text-xl">show_chart</mat-icon>
-        Revenue
-      </a>
+        <a [routerLink]="getLink('/revenue')" routerLinkActive="bg-slate-800/50 text-primary border-primary"
+           class="flex items-center gap-3 px-4 py-3.5 text-slate-400 border border-transparent hover:bg-slate-800/30 hover:text-slate-200 rounded-2xl transition-all font-semibold text-sm"
+           (click)="isSidebarOpen.set(false)">
+          <span class="material-symbols-outlined text-[20px]">show_chart</span> Revenue
+        </a>
       }
 
       @if (router.url.startsWith('/admin')) {
-        <a
-          routerLink="/admin/promos"
-          routerLinkActive="bg-slate-800 text-indigo-400"
-          class="flex items-center gap-3 px-3 py-3 text-slate-300 hover:bg-slate-800 hover:text-indigo-400 rounded-lg transition-colors"
-        >
-          <mat-icon class="!text-xl">local_offer</mat-icon>
-          Promos
+        <a routerLink="/admin/promos" routerLinkActive="bg-slate-800/50 text-primary border-primary"
+           class="flex items-center gap-3 px-4 py-3.5 text-slate-400 border border-transparent hover:bg-slate-800/30 hover:text-slate-200 rounded-2xl transition-all font-semibold text-sm"
+           (click)="isSidebarOpen.set(false)">
+          <span class="material-symbols-outlined text-[20px]">local_offer</span> Promos
         </a>
-        <a
-          routerLink="/admin/payments"
-          routerLinkActive="bg-slate-800 text-indigo-400"
-          class="flex items-center gap-3 px-3 py-3 text-slate-300 hover:bg-slate-800 hover:text-indigo-400 rounded-lg transition-colors"
-        >
-          <mat-icon class="!text-xl">payments</mat-icon>
-          Payments
+        <a routerLink="/admin/payments" routerLinkActive="bg-slate-800/50 text-primary border-primary"
+           class="flex items-center gap-3 px-4 py-3.5 text-slate-400 border border-transparent hover:bg-slate-800/30 hover:text-slate-200 rounded-2xl transition-all font-semibold text-sm"
+           (click)="isSidebarOpen.set(false)">
+          <span class="material-symbols-outlined text-[20px]">payments</span> Payments
         </a>
       }
-
-      <div class="border-t border-slate-800 my-4"></div>
-      <a
-        routerLink="/"
-        class="flex items-center gap-3 px-3 py-3 text-slate-300 hover:bg-slate-800 hover:text-indigo-400 rounded-lg transition-colors"
-      >
-        <mat-icon class="!text-xl">storefront</mat-icon>
-        Back to store
-      </a>
     </nav>
   </aside>
 
-  <main class="flex-1 overflow-y-auto min-w-0">
-    <router-outlet></router-outlet>
-  </main>
+  <!-- Main Content Wrapper -->
+  <div class="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+    
+    <!-- Top-bar (NEW) -->
+    <header class="h-20 bg-surface border-b border-outline px-4 lg:px-8 flex items-center justify-between shrink-0 z-30 shadow-sm">
+      <!-- Left: Mobile Toggle -->
+      <div class="flex items-center gap-4">
+        <button class="lg:hidden w-10 h-10 rounded-xl bg-surface-container flex items-center justify-center text-on-surface-variant border border-outline" (click)="toggleSidebar()">
+          <span class="material-symbols-outlined text-[24px]">menu</span>
+        </button>
+      </div>
+
+      <!-- Right: User Actions -->
+      <div class="flex items-center gap-2 sm:gap-4">
+        <a routerLink="/" class="hidden sm:flex items-center gap-2 text-xs font-extrabold uppercase tracking-widest text-on-surface-variant hover:text-primary transition-colors">
+          <span class="material-symbols-outlined text-[18px]">storefront</span> View Store
+        </a>
+        
+        <div class="hidden sm:block w-px h-6 bg-outline mx-2"></div>
+        
+        <a routerLink="/profile" title="My Profile" class="w-10 h-10 rounded-full flex items-center justify-center bg-surface-container text-on-surface-variant hover:text-primary border border-outline transition-colors">
+          <span class="material-symbols-outlined text-[20px]">person</span>
+        </a>
+        
+        <button (click)="logout()" title="Sign Out" class="w-10 h-10 rounded-full flex items-center justify-center bg-error-bg text-error hover:bg-error hover:text-white border border-error/20 transition-colors">
+          <span class="material-symbols-outlined text-[20px]">logout</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Page Content (Scrollable) -->
+    <main class="flex-1 overflow-y-auto bg-surface-alt custom-scrollbar relative">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
 </div>

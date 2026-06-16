@@ -1,14 +1,19 @@
+/* ============================================================
+   HOME PAGE STYLES
+   ============================================================ */
+
 :host {
   display: block;
 }
 
-// Ensure the Bento grid maintains height on desktop
+// Ensure the Bento grid maintains height and proportions on desktop
 @media (min-width: 768px) {
   .grid {
     grid-auto-rows: 1fr;
   }
 }
 
+// Make material symbols slightly thinner for a premium, delicate look
 .material-symbols-outlined {
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
 }

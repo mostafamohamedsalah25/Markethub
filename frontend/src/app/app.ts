@@ -2,9 +2,6 @@ import { Component, OnInit, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { NavbarComponent } from './shared/components/navbar/navbar';
-
-import { FooterComponent } from './shared/components/footer/footer.component';
 import { environment } from '../environments/environment';
 import { UiService } from './core/services/ui.service';
 
@@ -12,9 +9,7 @@ import { UiService } from './core/services/ui.service';
   selector: 'app-root',
   standalone: true,
   imports: [
-    RouterOutlet, 
-    NavbarComponent, 
-    FooterComponent,
+    RouterOutlet,
     MatSnackBarModule
   ],
   templateUrl: './app.html',

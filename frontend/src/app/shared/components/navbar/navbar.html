@@ -1,126 +1,120 @@
-<header class="bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm sticky top-0 z-50 font-inter">
-  <div class="flex justify-between items-center px-6 py-3 w-full max-w-[1280px] mx-auto">
+<header class="sticky top-0 z-50 w-full transition-all duration-300 bg-surface/80 backdrop-blur-xl border-b border-outline shadow-sm" [class.py-1]="scrolled()">
+  <div class="max-w-[1600px] mx-auto px-4 md:px-8 flex items-center justify-between h-[76px] gap-4">
 
-    <div class="flex items-center gap-8">
-      <a routerLink="/" class="text-2xl font-black tracking-tight text-indigo-600 flex items-center gap-2">
-        <mat-icon>hub</mat-icon>
-        NexusCommerce
-      </a>
+    <a routerLink="/" class="flex items-center gap-3 flex-shrink-0 group outline-none">
+      <div class="w-10 h-10 rounded-[14px] flex items-center justify-center bg-primary shadow-md shadow-primary/30 transition-transform duration-300 group-hover:scale-105">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M2 3H4.5L7.5 15H17.5L20 6H6" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M9.5 8.5L12 11.5L14.5 8.5" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="8.5" cy="19" r="1.8" fill="white"/>
+          <circle cx="16.5" cy="19" r="1.8" fill="white"/>
+        </svg>
+      </div>
+      <span class="font-extrabold text-2xl tracking-tight hidden lg:block text-on-surface font-sans">
+        Market<span class="text-primary">Hub</span>
+      </span>
+    </a>
 
-      <nav class="hidden md:flex items-center gap-6">
-        @for (link of navLinks; track link.label) {
+    <nav class="hidden md:flex items-center gap-1">
+      @for (link of navLinks; track link.label) {
         @if (link.route) {
-        <a [routerLink]="link.route" [queryParams]="link.queryParams || {}"
-          routerLinkActive="text-indigo-600 border-indigo-600" [routerLinkActiveOptions]="{exact: true}"
-          class="text-slate-600 font-medium border-b-2 border-transparent pb-1 hover:text-indigo-600 transition-colors">
-          {{ link.label }}
-        </a>
-        } @else if (link.feature) {
-        <button (click)="showComingSoon(link.feature)"
-          class="text-slate-600 font-medium border-b-2 border-transparent pb-1 hover:text-indigo-600 transition-colors cursor-pointer">
-          {{ link.label }}
-        </button>
+          <a [routerLink]="link.route" [queryParams]="link.queryParams || {}" routerLinkActive="bg-surface-container text-primary" [routerLinkActiveOptions]="{exact: link.route === '/'}"
+             class="px-4 py-2.5 rounded-xl text-xs font-extrabold uppercase tracking-widest text-on-surface-variant hover:text-on-surface hover:bg-surface-hover transition-all outline-none">
+            {{ link.label }}
+          </a>
         }
-        }
-      </nav>
-    </div>
+      }
+    </nav>
 
-    <div class="flex items-center gap-4">
-      <app-search-bar class="hidden lg:block"></app-search-bar>
+    <div class="flex items-center gap-3 flex-shrink-0">
+      <div class="w-56 lg:w-80 hidden sm:block">
+        <app-search-bar></app-search-bar>
+      </div>
 
-      <ng-container *ngIf="isAuthenticated(); else loggedOut">
-        <a *ngIf="isSellerOrAdmin()"
-          [routerLink]="currentUser()?.role === 'admin' ? '/admin/overview' : '/seller/overview'" mat-button
-          color="primary" class="!rounded-full hidden sm:inline-flex">
-          Dashboard
+      <button class="sm:hidden w-10 h-10 rounded-full flex items-center justify-center bg-surface-container text-on-surface-variant">
+        <span class="material-symbols-outlined text-[20px]">search</span>
+      </button>
+
+      <button (click)="toggleTheme()" class="w-10 h-10 rounded-full flex items-center justify-center bg-surface-container border border-outline hover:border-primary transition-colors text-on-surface-variant">
+        <span class="material-symbols-outlined text-[20px]">{{ isDarkMode() ? 'light_mode' : 'dark_mode' }}</span>
+      </button>
+
+      @if (isAuthenticated()) {
+        <a routerLink="/cart" class="w-10 h-10 rounded-full flex items-center justify-center bg-surface-container border border-outline hover:border-primary hover:text-primary transition-colors text-on-surface-variant relative">
+          <span class="material-symbols-outlined text-[20px]">shopping_bag</span>
         </a>
 
-        <button mat-icon-button (click)="notificationService.fetchNotifications()"
-          [matMenuTriggerFor]="notificationMenu" class="text-slate-600 hover:bg-slate-100">
-          <mat-icon [matBadge]="unreadNotifications() || null" matBadgeColor="warn"
-            matBadgeSize="small">notifications</mat-icon>
-        </button>
-
-        <mat-menu #notificationMenu="matMenu" class="!mt-2 !rounded-xl !min-w-[320px] max-h-[400px]">
-          <div class="px-4 py-3 border-b border-slate-100 flex justify-between items-center">
-            <span class="text-sm font-bold text-slate-900">Notifications</span>
-            <button *ngIf="unreadNotifications() > 0" (click)="markAllAsRead(); $event.stopPropagation()"
-              class="text-xs text-indigo-600 hover:underline">Mark all as read</button>
-          </div>
-
-          <div class="py-2" (click)="$event.stopPropagation()">
-            <ng-container *ngIf="notifications().length > 0; else noNotifications">
-              <div *ngFor="let notification of notifications()" (click)="markAsRead(notification)"
-                class="px-4 py-3 hover:bg-slate-50 transition-colors cursor-pointer border-b border-slate-50 last:border-0"
-                [class.bg-indigo-50]="!notification.is_read">
-                <div class="flex gap-3">
-                  <div class="mt-1">
-                    <mat-icon *ngIf="notification.notification_type === 'order_status'"
-                      class="text-amber-500 !text-lg">shopping_bag</mat-icon>
-                    <mat-icon *ngIf="notification.notification_type === 'payment'"
-                      class="text-emerald-500 !text-lg">payments</mat-icon>
-                    <mat-icon *ngIf="notification.notification_type === 'promotion'"
-                      class="text-indigo-500 !text-lg">campaign</mat-icon>
-                    <mat-icon *ngIf="notification.notification_type === 'system'"
-                      class="text-slate-500 !text-lg">notifications</mat-icon>
-                  </div>
-                  <div class="flex-1">
-                    <p class="text-sm text-slate-800 leading-snug" [class.font-bold]="!notification.is_read">{{
-                      notification.message }}</p>
-                    <p class="text-[10px] text-slate-500 mt-1">{{ notification.created_at | date:'short' }}</p>
-                  </div>
-                  <div *ngIf="!notification.is_read" class="w-2 h-2 rounded-full bg-indigo-600 mt-2"></div>
-                </div>
+        <div class="relative" data-menu>
+          <button (click)="toggleNotifMenu()" class="w-10 h-10 rounded-full flex items-center justify-center bg-surface-container border border-outline hover:border-primary transition-colors text-on-surface-variant relative">
+            <span class="material-symbols-outlined text-[20px]">notifications</span>
+            @if (unreadNotifications() > 0) {
+              <span class="absolute top-1 right-1 w-2.5 h-2.5 rounded-full bg-error border-2 border-surface"></span>
+            }
+          </button>
+          @if (notifMenuOpen()) {
+            <div class="absolute right-0 mt-3 w-80 bg-surface rounded-[1.5rem] shadow-2xl border border-outline overflow-hidden animate-scale-in">
+              <div class="p-4 border-b border-outline flex justify-between items-center bg-surface-container-low">
+                <span class="text-sm font-extrabold text-on-surface">Notifications</span>
+                @if (unreadNotifications() > 0) {
+                  <button (click)="markAllAsRead()" class="text-[10px] font-extrabold uppercase tracking-widest text-primary hover:underline">Mark all read</button>
+                }
               </div>
-            </ng-container>
-            <ng-template #noNotifications>
-              <div class="px-4 py-8 text-center bg-white">
-                <mat-icon class="text-slate-300 !text-4xl h-10 w-10">notifications_off</mat-icon>
-                <p class="text-sm text-slate-500 mt-2">No notifications yet</p>
+              <div class="max-h-[300px] overflow-y-auto">
+                @if (notifications().length === 0) {
+                  <div class="p-8 text-center text-on-surface-variant">
+                    <span class="material-symbols-outlined text-3xl opacity-50 mb-2">notifications_off</span>
+                    <p class="text-xs font-bold">You're all caught up!</p>
+                  </div>
+                }
               </div>
-            </ng-template>
-          </div>
-        </mat-menu>
+            </div>
+          }
+        </div>
 
-        <button mat-icon-button class="text-slate-600 hover:bg-slate-100" routerLink="/cart">
-          <mat-icon matBadgeColor="warn" matBadgeSize="small">shopping_cart</mat-icon>
-        </button>
+        <div class="relative hidden sm:block" data-menu>
+          <button (click)="toggleUserMenu()" class="flex items-center gap-2 pl-1 pr-3 py-1 rounded-full border border-outline hover:border-primary bg-surface-container transition-all">
+            <div class="w-8 h-8 rounded-full bg-primary-container text-primary flex items-center justify-center font-extrabold">
+              {{ currentUser()?.email?.charAt(0) | uppercase }}
+            </div>
+            <span class="material-symbols-outlined text-[18px] text-on-surface-variant">expand_more</span>
+          </button>
 
-        <button mat-icon-button [matMenuTriggerFor]="userMenu"
-          class="text-slate-600 hover:bg-slate-100 border border-slate-200">
-          <mat-icon>account_circle</mat-icon>
-        </button>
+          @if (userMenuOpen()) {
+            <div class="absolute right-0 mt-3 w-64 bg-surface rounded-[1.5rem] shadow-2xl border border-outline overflow-hidden animate-scale-in">
+              <div class="p-5 border-b border-outline bg-surface-container-low">
+                <p class="text-sm font-bold text-on-surface truncate">{{ currentUser()?.email }}</p>
+                <p class="text-[10px] font-extrabold uppercase tracking-widest text-on-surface-variant mt-1">{{ currentUser()?.role }}</p>
+              </div>
+              <div class="p-2 flex flex-col gap-1">
+                <a routerLink="/profile" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-surface-hover text-sm font-bold text-on-surface-variant hover:text-on-surface transition-colors">
+                  <span class="material-symbols-outlined text-[20px]">person</span> My Profile
+                </a>
+                <a routerLink="/my-orders" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-surface-hover text-sm font-bold text-on-surface-variant hover:text-on-surface transition-colors">
+                  <span class="material-symbols-outlined text-[20px]">receipt_long</span> Orders
+                </a>
+                @if (isSellerOrAdmin()) {
+                  <a [routerLink]="currentUser()?.role === 'admin' ? '/admin/overview' : '/seller/overview'" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-surface-hover text-sm font-bold text-on-surface-variant hover:text-primary transition-colors">
+                    <span class="material-symbols-outlined text-[20px]">dashboard</span> Dashboard
+                  </a>
+                }
+              </div>
+              <div class="p-2 border-t border-outline">
+                <button (click)="logout()" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-error-bg text-sm font-bold text-error transition-colors">
+                  <span class="material-symbols-outlined text-[20px]">logout</span> Sign Out
+                </button>
+              </div>
+            </div>
+          }
+        </div>
 
-        <mat-menu #userMenu="matMenu" class="!mt-2 !rounded-xl !min-w-[200px]">
-          <div class="px-4 py-3 border-b border-slate-100">
-            <p class="text-sm font-bold text-slate-900 truncate">{{ currentUser()?.email }}</p>
-            <p class="text-xs text-slate-500 uppercase tracking-wider mt-1">{{ currentUser()?.role }}</p>
-          </div>
-          <button mat-menu-item routerLink="/profile">
-            <mat-icon class="text-slate-500">person</mat-icon>
-            <span>My Profile</span>
-          </button>
-          <button mat-menu-item routerLink="/my-orders">
-            <mat-icon class="text-slate-500">receipt_long</mat-icon>
-            <span>My Orders</span>
-          </button>
-          <button mat-menu-item routerLink="/wishlist">
-            <mat-icon class="text-slate-500">favorite</mat-icon>
-            <span>My Wishlist</span>
-          </button>
-          <mat-divider></mat-divider>
-          <button mat-menu-item (click)="logout()" class="!text-red-600">
-            <mat-icon class="text-red-600">logout</mat-icon>
-            <span>Logout</span>
-          </button>
-        </mat-menu>
-      </ng-container>
+      } @else {
+        <a routerLink="/auth/login" class="text-xs font-extrabold uppercase tracking-widest text-on-surface-variant hover:text-on-surface hidden sm:block px-2">Sign in</a>
+        <a routerLink="/auth/register" class="mh-btn mh-btn-brand mh-btn-sm hidden sm:flex px-6 shadow-lg shadow-primary/20">Get Started</a>
+      }
 
-      <ng-template #loggedOut>
-        <a routerLink="/auth/login" mat-button class="text-slate-600 font-medium">Log in</a>
-        <a routerLink="/auth/register" mat-flat-button color="primary" class="!rounded-lg font-medium">Sign up</a>
-      </ng-template>
+      <button (click)="toggleMobileMenu()" class="md:hidden w-10 h-10 flex items-center justify-center text-on-surface">
+        <span class="material-symbols-outlined text-[28px]">{{ mobileMenuOpen() ? 'close' : 'menu' }}</span>
+      </button>
     </div>
-
   </div>
 </header>

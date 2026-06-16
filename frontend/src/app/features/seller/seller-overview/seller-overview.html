@@ -1,66 +1,104 @@
-<div class="max-w-7xl mx-auto px-4 py-6">
-  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+<div class="max-w-[1600px] mx-auto px-8 py-10 animate-fade-in">
+  
+  <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 mb-12">
     <div>
-      <h1 class="text-2xl font-bold text-slate-900">Seller overview</h1>
-      <p class="text-slate-600 text-sm mt-1">Your store at a glance</p>
+      <h1 class="text-3xl md:text-4xl font-extrabold text-on-surface tracking-tight">Store Overview</h1>
+      <p class="text-xs font-bold text-on-surface-variant mt-2 uppercase tracking-widest">Your store performance at a glance</p>
     </div>
-    <button mat-stroked-button color="primary" (click)="load()" [disabled]="loading()">
-      <mat-icon>refresh</mat-icon>
-      Refresh
+    <button class="mh-btn mh-btn-outline bg-surface px-6" (click)="load()" [disabled]="loading()">
+      <span class="material-symbols-outlined text-[18px]" [class.animate-spin]="loading()">refresh</span>
+      {{ loading() ? 'Refreshing...' : 'Refresh Data' }}
     </button>
   </div>
 
   @if (loading()) {
-    <div class="flex justify-center py-24">
-      <mat-spinner diameter="48"></mat-spinner>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-10">
+      @for (i of [1,2,3,4]; track i) {
+        <div class="h-32 mh-skeleton rounded-[2rem] border border-outline shadow-sm"></div>
+      }
     </div>
-  } @else if (error()) {
-    <div class="rounded-xl border border-red-200 bg-red-50 text-red-800 px-4 py-3">{{ error() }}</div>
-  } @else {
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-      <mat-card class="!shadow-sm !rounded-xl !border !border-slate-200">
-        <mat-card-content class="!pt-6">
-          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Products</p>
-          <p class="text-3xl font-bold text-slate-900 mt-1">{{ productCount() }}</p>
-          <mat-icon class="text-indigo-500 mt-2">inventory_2</mat-icon>
-        </mat-card-content>
-      </mat-card>
-      <mat-card class="!shadow-sm !rounded-xl !border !border-slate-200">
-        <mat-card-content class="!pt-6">
-          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Orders</p>
-          <p class="text-3xl font-bold text-slate-900 mt-1">{{ orderCount() }}</p>
-          <mat-icon class="text-emerald-500 mt-2">receipt_long</mat-icon>
-        </mat-card-content>
-      </mat-card>
-      <mat-card class="!shadow-sm !rounded-xl !border !border-slate-200">
-        <mat-card-content class="!pt-6">
-          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Total Sales (Units)</p>
-          <p class="text-3xl font-bold text-slate-900 mt-1">{{ salesCount() }}</p>
-          <mat-icon class="text-amber-500 mt-2">shopping_bag</mat-icon>
-        </mat-card-content>
-      </mat-card>
-      <mat-card class="!shadow-sm !rounded-xl !border !border-slate-200">
-        <mat-card-content class="!pt-6">
-          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Average Rating</p>
-          <div class="flex items-center gap-2 mt-1">
-            <p class="text-3xl font-bold text-slate-900">{{ averageRating() | number : '1.1-1' }}</p>
-            <mat-icon class="text-yellow-500 !text-2xl">star</mat-icon>
+  } 
+  
+  @else if (error()) {
+    <div class="flex items-center gap-4 p-6 rounded-[2rem] bg-error-bg border border-error/20 text-error-text shadow-sm mb-8">
+      <span class="material-symbols-outlined text-3xl">error</span>
+      <div>
+        <h3 class="font-bold text-lg mb-1">Attention Required</h3>
+        <p class="text-sm font-medium">{{ error() }}</p>
+      </div>
+    </div>
+  } 
+  
+  @else {
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
+      
+      <div class="p-6 rounded-[2rem] bg-surface border border-outline shadow-sm hover:shadow-md hover:border-outline-variant transition-all flex items-start justify-between group">
+        <div>
+          <p class="text-[11px] font-extrabold uppercase tracking-widest text-on-surface-variant mb-1">Products</p>
+          <p class="text-4xl font-extrabold text-on-surface tracking-tight">{{ productCount() }}</p>
+        </div>
+        <div class="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-500/10 text-indigo-500 flex items-center justify-center transition-transform group-hover:scale-110">
+          <span class="material-symbols-outlined text-[24px]">inventory_2</span>
+        </div>
+      </div>
+
+      <div class="p-6 rounded-[2rem] bg-surface border border-outline shadow-sm hover:shadow-md hover:border-outline-variant transition-all flex items-start justify-between group">
+        <div>
+          <p class="text-[11px] font-extrabold uppercase tracking-widest text-on-surface-variant mb-1">Total Orders</p>
+          <p class="text-4xl font-extrabold text-on-surface tracking-tight">{{ orderCount() }}</p>
+        </div>
+        <div class="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 text-emerald-500 flex items-center justify-center transition-transform group-hover:scale-110">
+          <span class="material-symbols-outlined text-[24px]">receipt_long</span>
+        </div>
+      </div>
+
+      <div class="p-6 rounded-[2rem] bg-surface border border-outline shadow-sm hover:shadow-md hover:border-outline-variant transition-all flex items-start justify-between group">
+        <div>
+          <p class="text-[11px] font-extrabold uppercase tracking-widest text-on-surface-variant mb-1">Items Sold</p>
+          <p class="text-4xl font-extrabold text-on-surface tracking-tight">{{ salesCount() }}</p>
+        </div>
+        <div class="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-500/10 text-amber-500 flex items-center justify-center transition-transform group-hover:scale-110">
+          <span class="material-symbols-outlined text-[24px]">shopping_bag</span>
+        </div>
+      </div>
+
+      <div class="p-6 rounded-[2rem] bg-surface border border-outline shadow-sm hover:shadow-md hover:border-outline-variant transition-all flex items-start justify-between group">
+        <div>
+          <p class="text-[11px] font-extrabold uppercase tracking-widest text-on-surface-variant mb-1">Store Rating</p>
+          <div class="flex items-center gap-2">
+            <p class="text-4xl font-extrabold text-on-surface tracking-tight">{{ averageRating() | number : '1.1-1' }}</p>
+            <span class="material-symbols-outlined text-amber-400 text-[28px]" [style.font-variation-settings]="'\'FILL\' 1'">star</span>
           </div>
-          <mat-icon class="text-yellow-500 mt-2">rate_review</mat-icon>
-        </mat-card-content>
-      </mat-card>
-      <mat-card class="!shadow-sm !rounded-xl !border !border-slate-200">
-        <mat-card-content class="!pt-6">
-          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Unfulfilled Orders</p>
-          <p class="text-3xl font-bold text-slate-900 mt-1">{{ orderCount() }}</p>
-        </mat-card-content>
-      </mat-card>
+        </div>
+        <div class="w-12 h-12 rounded-2xl bg-purple-50 dark:bg-purple-500/10 text-purple-500 flex items-center justify-center transition-transform group-hover:scale-110">
+          <span class="material-symbols-outlined text-[24px]">rate_review</span>
+        </div>
+      </div>
+
+      <div class="p-6 rounded-[2rem] bg-surface border border-outline shadow-sm hover:shadow-md hover:border-outline-variant transition-all flex items-start justify-between group sm:col-span-2 lg:col-span-1 xl:col-span-4">
+        <div class="flex items-center gap-4">
+          <div class="w-14 h-14 rounded-2xl bg-rose-50 dark:bg-rose-500/10 text-rose-500 flex items-center justify-center transition-transform group-hover:scale-110 border border-rose-100 dark:border-rose-500/20">
+            <span class="material-symbols-outlined text-[28px]">local_shipping</span>
+          </div>
+          <div>
+            <p class="text-[11px] font-extrabold uppercase tracking-widest text-on-surface-variant mb-1">Orders to Fulfill</p>
+            <p class="text-3xl font-extrabold text-on-surface tracking-tight">{{ orderCount() }}</p>
+          </div>
+        </div>
+        <a routerLink="/seller/orders" class="mh-btn mh-btn-outline bg-surface !px-4 !py-2 !text-xs self-center">View Pending</a>
+      </div>
     </div>
 
-    <div class="flex flex-wrap gap-3">
-      <a mat-stroked-button color="primary" routerLink="/seller/products">Manage products</a>
-      <a mat-stroked-button routerLink="/seller/orders">View orders</a>
-      <a mat-stroked-button routerLink="/seller/revenue">Revenue &amp; analytics</a>
+    <div class="flex flex-col sm:flex-row flex-wrap items-center gap-4 border-t border-outline pt-8">
+      <a class="mh-btn mh-btn-brand shadow-lg shadow-primary/20 w-full sm:w-auto" routerLink="/seller/products">
+        <span class="material-symbols-outlined text-[18px]">inventory_2</span> Manage Products
+      </a>
+      <a class="mh-btn mh-btn-outline bg-surface w-full sm:w-auto" routerLink="/seller/orders">
+        <span class="material-symbols-outlined text-[18px]">receipt_long</span> View Orders
+      </a>
+      <a class="mh-btn mh-btn-ghost bg-surface border border-outline w-full sm:w-auto" routerLink="/seller/revenue">
+        <span class="material-symbols-outlined text-[18px]">show_chart</span> Revenue & Analytics
+      </a>
     </div>
   }
 </div>

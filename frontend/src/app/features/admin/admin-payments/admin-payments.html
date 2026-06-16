@@ -1,119 +1,136 @@
-<div class="max-w-7xl mx-auto px-4 py-6">
-  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+<div class="max-w-[1600px] mx-auto px-6 py-8 animate-fade-in">
+  
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
     <div>
-      <h1 class="text-2xl font-bold text-slate-900">Payments</h1>
-      <p class="text-slate-600 text-sm mt-1">Monitor transactions across the marketplace</p>
+      <h1 class="text-3xl font-extrabold text-on-surface tracking-tight">Payments</h1>
+      <p class="text-sm font-medium text-on-surface-variant mt-1 uppercase tracking-widest">Monitor marketplace transactions</p>
     </div>
-    <button mat-stroked-button color="primary" (click)="load()" [disabled]="loading()">
-      <mat-icon>refresh</mat-icon>
-      Refresh
+    <button class="mh-btn mh-btn-outline bg-surface px-6" (click)="load()" [disabled]="loading()">
+      <span class="material-symbols-outlined text-[18px]" [class.animate-spin]="loading()">refresh</span>
+      {{ loading() ? 'Refreshing...' : 'Refresh Data' }}
     </button>
   </div>
 
-  <div class="flex flex-col lg:flex-row flex-wrap gap-3 mb-4">
-    <mat-form-field appearance="outline" class="!w-40">
-      <mat-label>Status</mat-label>
-      <mat-select
-        [ngModel]="statusFilter()"
-        (ngModelChange)="statusFilter.set($event); pageIndex.set(0)"
-      >
-        <mat-option value="all">All</mat-option>
-        <mat-option value="pending">pending</mat-option>
-        <mat-option value="processing">processing</mat-option>
-        <mat-option value="succeeded">succeeded</mat-option>
-        <mat-option value="failed">failed</mat-option>
-        <mat-option value="refunded">refunded</mat-option>
-      </mat-select>
-    </mat-form-field>
+  <!-- Filters Area -->
+  <div class="flex flex-col lg:flex-row flex-wrap gap-4 mb-6 p-5 bg-surface-container-low border border-outline rounded-3xl">
+    
+    <div class="flex flex-col gap-1.5 w-full sm:w-48">
+      <label class="text-[11px] font-extrabold uppercase tracking-widest text-on-surface-variant pl-1">Status</label>
+      <div class="relative bg-surface rounded-xl border border-outline hover:border-primary transition-colors">
+        <select [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event); pageIndex.set(0)"
+                class="w-full bg-transparent border-none py-2.5 pl-4 pr-10 text-sm font-bold text-on-surface outline-none appearance-none cursor-pointer">
+          <option value="all">All Statuses</option>
+          <option value="pending">Pending</option>
+          <option value="processing">Processing</option>
+          <option value="succeeded">Succeeded</option>
+          <option value="failed">Failed</option>
+          <option value="refunded">Refunded</option>
+        </select>
+        <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant">expand_more</span>
+      </div>
+    </div>
 
-    <mat-form-field appearance="outline" class="!w-40">
-      <mat-label>Provider</mat-label>
-      <mat-select
-        [ngModel]="providerFilter()"
-        (ngModelChange)="providerFilter.set($event); pageIndex.set(0)"
-      >
-        <mat-option value="all">All</mat-option>
-        <mat-option value="mock">mock</mat-option>
-        <mat-option value="stripe">stripe</mat-option>
-      </mat-select>
-    </mat-form-field>
+    <div class="flex flex-col gap-1.5 w-full sm:w-48">
+      <label class="text-[11px] font-extrabold uppercase tracking-widest text-on-surface-variant pl-1">Provider</label>
+      <div class="relative bg-surface rounded-xl border border-outline hover:border-primary transition-colors">
+        <select [ngModel]="providerFilter()" (ngModelChange)="providerFilter.set($event); pageIndex.set(0)"
+                class="w-full bg-transparent border-none py-2.5 pl-4 pr-10 text-sm font-bold text-on-surface outline-none appearance-none cursor-pointer">
+          <option value="all">All Providers</option>
+          <option value="mock">Mock Data</option>
+          <option value="stripe">Stripe</option>
+        </select>
+        <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant">expand_more</span>
+      </div>
+    </div>
 
-    <mat-form-field appearance="outline" class="!min-w-[200px] flex-1">
-      <mat-label>Order ID contains</mat-label>
-      <input matInput [ngModel]="searchOrderId()" (ngModelChange)="searchOrderId.set($event); pageIndex.set(0)" />
-    </mat-form-field>
+    <div class="flex flex-col gap-1.5 flex-1 min-w-[200px]">
+      <label class="text-[11px] font-extrabold uppercase tracking-widest text-on-surface-variant pl-1">Search Order ID</label>
+      <div class="relative group">
+        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant group-focus-within:text-primary transition-colors">search</span>
+        <input type="text" [ngModel]="searchOrderId()" (ngModelChange)="searchOrderId.set($event); pageIndex.set(0)" placeholder="e.g. 1045..."
+               class="w-full bg-surface rounded-xl border border-outline py-2.5 pl-10 pr-4 text-sm font-medium text-on-surface outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all">
+      </div>
+    </div>
   </div>
 
+  <!-- Content Area -->
   @if (loading()) {
-    <div class="flex justify-center py-20">
-      <mat-spinner diameter="40"></mat-spinner>
+    <div class="flex flex-col gap-3">
+      @for (i of [1,2,3,4,5]; track i) { <div class="h-16 mh-skeleton rounded-2xl"></div> }
     </div>
-  } @else if (rows().length === 0) {
-    <div class="rounded-xl border border-dashed border-slate-200 bg-white p-12 text-center text-slate-600">
-      No payment records yet.
-    </div>
-  } @else if (filtered().length === 0) {
-    <div class="rounded-xl border border-dashed border-slate-200 bg-white p-12 text-center text-slate-600">
-      No payments match the current filters.
+  } @else if (rows().length === 0 || filtered().length === 0) {
+    <div class="py-20 flex flex-col items-center justify-center text-center bg-surface-container-low border border-dashed border-outline-variant rounded-[2rem]">
+      <div class="w-16 h-16 bg-surface-container rounded-full flex items-center justify-center mb-4">
+        <span class="material-symbols-outlined text-3xl text-on-surface-variant opacity-50">receipt_long</span>
+      </div>
+      <h3 class="text-xl font-bold text-on-surface mb-1">No payments found</h3>
+      <p class="text-sm font-medium text-on-surface-variant">Try adjusting your filters or search query.</p>
     </div>
   } @else {
-    <div class="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
-      <table mat-table [dataSource]="pagedRows()" class="w-full">
-        <ng-container matColumnDef="id">
-          <th mat-header-cell *matHeaderCellDef>ID</th>
-          <td mat-cell *matCellDef="let p">{{ p.id }}</td>
-        </ng-container>
+    <!-- Premium Table -->
+    <div class="bg-surface border border-outline rounded-3xl overflow-hidden shadow-sm">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-surface-container-low text-[11px] font-extrabold uppercase tracking-widest text-on-surface-variant border-b border-outline">
+              <th class="px-6 py-4 font-extrabold">ID</th>
+              <th class="px-6 py-4 font-extrabold">Order</th>
+              <th class="px-6 py-4 font-extrabold">Buyer</th>
+              <th class="px-6 py-4 font-extrabold">Seller</th>
+              <th class="px-6 py-4 font-extrabold">Amount</th>
+              <th class="px-6 py-4 font-extrabold">Provider</th>
+              <th class="px-6 py-4 font-extrabold">Status</th>
+              <th class="px-6 py-4 font-extrabold text-right">Paid At</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-outline">
+            @for (p of pagedRows(); track p.id) {
+              <tr class="hover:bg-surface-hover transition-colors group">
+                <td class="px-6 py-4 text-sm font-bold text-on-surface">#{{ p.id }}</td>
+                <td class="px-6 py-4 text-sm font-bold text-primary">#{{ p.order_id }}</td>
+                <td class="px-6 py-4 text-sm font-medium text-on-surface max-w-[180px] truncate">{{ p.buyer_email }}</td>
+                <td class="px-6 py-4 text-sm font-medium text-on-surface max-w-[160px] truncate">{{ p.seller_name }}</td>
+                <td class="px-6 py-4 text-sm font-extrabold text-on-surface">{{ p.amount }} <span class="text-xs font-semibold text-on-surface-variant">{{ p.currency | uppercase }}</span></td>
+                <td class="px-6 py-4 text-sm font-medium text-on-surface-variant capitalize">{{ p.provider }}</td>
+                <td class="px-6 py-4">
+                  <span class="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-extrabold uppercase tracking-wider border"
+                        [ngClass]="statusChipClass(p.status)">
+                    {{ p.status }}
+                  </span>
+                </td>
+                <td class="px-6 py-4 text-sm font-medium text-on-surface-variant text-right">
+                  {{ p.paid_at ? (p.paid_at | date:'short') : '-' }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
 
-        <ng-container matColumnDef="order">
-          <th mat-header-cell *matHeaderCellDef>Order</th>
-          <td mat-cell *matCellDef="let p">#{{ p.order_id }}</td>
-        </ng-container>
-
-        <ng-container matColumnDef="buyer">
-          <th mat-header-cell *matHeaderCellDef>Buyer</th>
-          <td mat-cell *matCellDef="let p" class="max-w-[180px] truncate">{{ p.buyer_email }}</td>
-        </ng-container>
-
-        <ng-container matColumnDef="seller">
-          <th mat-header-cell *matHeaderCellDef>Seller</th>
-          <td mat-cell *matCellDef="let p" class="max-w-[160px] truncate">{{ p.seller_name }}</td>
-        </ng-container>
-
-        <ng-container matColumnDef="amount">
-          <th mat-header-cell *matHeaderCellDef>Amount</th>
-          <td mat-cell *matCellDef="let p">{{ p.amount }} {{ p.currency }}</td>
-        </ng-container>
-
-        <ng-container matColumnDef="provider">
-          <th mat-header-cell *matHeaderCellDef>Provider</th>
-          <td mat-cell *matCellDef="let p">{{ p.provider }}</td>
-        </ng-container>
-
-        <ng-container matColumnDef="status">
-          <th mat-header-cell *matHeaderCellDef>Status</th>
-          <td mat-cell *matCellDef="let p">
-            <span class="text-xs font-semibold px-2 py-1 rounded-full" [ngClass]="statusChipClass(p.status)">
-              {{ p.status }}
-            </span>
-          </td>
-        </ng-container>
-
-        <ng-container matColumnDef="paid_at">
-          <th mat-header-cell *matHeaderCellDef>Paid</th>
-          <td mat-cell *matCellDef="let p">{{ p.paid_at | date : 'short' }}</td>
-        </ng-container>
-
-        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-      </table>
-      <mat-paginator
-        [length]="filtered().length"
-        [pageIndex]="pageIndex()"
-        [pageSize]="pageSize()"
-        [pageSizeOptions]="[10, 15, 50]"
-        (page)="onPage($event)"
-      >
-      </mat-paginator>
+      <!-- Custom Pagination -->
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-t border-outline bg-surface-container-lowest">
+        <div class="flex items-center gap-3">
+          <span class="text-xs font-extrabold uppercase tracking-widest text-on-surface-variant">Rows per page:</span>
+          <select [ngModel]="pageSize()" (ngModelChange)="changePageSize($event)" class="bg-surface border border-outline rounded-lg px-2 py-1 text-xs font-bold outline-none cursor-pointer">
+            @for (size of pageSizeOptions; track size) { <option [value]="size">{{ size }}</option> }
+          </select>
+        </div>
+        
+        <div class="flex items-center gap-4">
+          <span class="text-xs font-extrabold tracking-widest text-on-surface-variant">
+            {{ (pageIndex() * pageSize()) + 1 }} - {{ Math.min((pageIndex() + 1) * pageSize(), filtered().length) }} of {{ filtered().length }}
+          </span>
+          <div class="flex items-center gap-1">
+            <button (click)="goToPage(pageIndex() - 1)" [disabled]="pageIndex() === 0" class="w-8 h-8 rounded-lg flex items-center justify-center border border-outline text-on-surface-variant hover:bg-surface-hover hover:text-on-surface disabled:opacity-30 transition-all">
+              <span class="material-symbols-outlined text-[18px]">chevron_left</span>
+            </button>
+            <button (click)="goToPage(pageIndex() + 1)" [disabled]="pageIndex() >= totalPages() - 1" class="w-8 h-8 rounded-lg flex items-center justify-center border border-outline text-on-surface-variant hover:bg-surface-hover hover:text-on-surface disabled:opacity-30 transition-all">
+              <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   }
 </div>

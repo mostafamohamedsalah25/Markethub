@@ -12,6 +12,8 @@ from django.core.files.base import ContentFile
 from django.utils import timezone
 from django.utils.text import slugify
 from PIL import Image, ImageDraw, ImageFont
+import urllib.request
+import urllib.parse
 
 SEED_MARKER = 'markethub-seed'
 SEED_PRODUCT_SLUGS: set[str] = set()
@@ -139,15 +141,6 @@ PROMOS = [
     ('OLDCODE', 'fixed', '5', False, None, None, 0, None),
 ]
 
-IMAGE_COLORS = [
-    (59, 130, 246),
-    (16, 185, 129),
-    (245, 158, 11),
-    (239, 68, 68),
-    (139, 92, 246),
-    (236, 72, 153),
-]
-
 
 def register_product_slug(slug: str) -> None:
     SEED_PRODUCT_SLUGS.add(slug)
@@ -156,18 +149,49 @@ def register_product_slug(slug: str) -> None:
 SEED_PRODUCT_SLUGS.update(row[1] for row in PRODUCTS)
 
 
-def make_product_image_file(slug: str, label: str, color_index: int) -> ContentFile:
+def _generate_fallback_image(slug: str, label: str, color_index: int) -> ContentFile:
+    """Fallback: توليد صورة أوفلاين بألوان داكنة أنيقة تتماشى مع التصميم الجديد في حال انقطاع الإنترنت"""
+    IMAGE_COLORS = [
+        (15, 23, 42),  # Dark Slate
+        (30, 41, 59),  # Charcoal
+        (17, 24, 39),  # Gray 900
+        (3, 7, 18),  # Gray 950
+    ]
     color = IMAGE_COLORS[color_index % len(IMAGE_COLORS)]
-    img = Image.new('RGB', (600, 600), color)
+    img = Image.new('RGB', (800, 800), color)
     draw = ImageDraw.Draw(img)
     text = label[:28]
-    draw.rectangle([(24, 24), (576, 576)], outline=(255, 255, 255), width=3)
-    draw.text((40, 280), text, fill=(255, 255, 255))
+
+    # رسم إطار أنيق
+    draw.rectangle([(20, 20), (780, 780)], outline=(148, 163, 184), width=2)
+    # كتابة النص في المنتصف (تقريبياً)
+    draw.text((40, 390), text, fill=(248, 250, 252))
+
     buf = BytesIO()
     img.save(buf, format='JPEG', quality=85)
-    filename = f'{slug}-{color_index}.jpg'
+    filename = f'{slug}-{color_index}-fallback.jpg'
     return ContentFile(buf.getvalue(), name=filename)
 
+
+def make_product_image_file(slug: str, label: str, order: int) -> ContentFile:
+    """
+    جلب صورة فوتوغرافية عالية الجودة من الإنترنت باستخدام خدمة مجانية ومستقرة.
+    """
+    width, height = 800, 800
+
+    # استخدام خدمة Picsum المجانية (ستقوم بتوليد صورة فوتوغرافية ثابتة بناءً على الـ slug)
+    url = f"https://picsum.photos/seed/{slug}{order}/{width}/{height}"
+
+    try:
+        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        with urllib.request.urlopen(req, timeout=15) as response:
+            image_bytes = response.read()
+            filename = f"{slug}-{order}.jpg"
+            return ContentFile(image_bytes, name=filename)
+
+    except Exception as e:
+        print(f"\n  [Network Warning] Could not fetch real image for '{label}' ({e}). Using offline fallback.")
+        return _generate_fallback_image(slug, label, order)
 
 def unique_tx_id(prefix: str, order_id: int, suffix: str = '') -> str:
     return f'seed_{prefix}_{order_id}_{suffix or uuid.uuid4().hex[:8]}'

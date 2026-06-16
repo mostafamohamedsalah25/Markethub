@@ -1,4 +1,4 @@
-import { Component, Input, HostBinding, inject, computed } from '@angular/core';
+import { Component, Input, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Product } from '../../../core/models/product.model';
@@ -20,16 +20,13 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 })
 export class ProductCardComponent {
   @Input({ required: true }) product!: Product;
+  
   private cartActions = inject(CartActionsService);
   private uiService = inject(UiService);
   private configService = inject(ConfigService);
   private wishlistService = inject(WishlistService);
   private authService = inject(AuthService);
   private snackBar = inject(MatSnackBar);
-
-  @HostBinding('class') get hostClasses() {
-    return 'block cursor-pointer group';
-  }
 
   isInWishlist = computed(() => this.wishlistService.isWishlisted(this.product.id));
 
@@ -44,6 +41,7 @@ export class ProductCardComponent {
     event.stopPropagation();
     event.preventDefault();
     this.cartActions.addToCart(this.product);
+    // Optional: Add a subtle toast here confirming addition
   }
 
   toggleWishlist(event: Event): void {
@@ -51,22 +49,22 @@ export class ProductCardComponent {
     event.preventDefault();
 
     if (!this.authService.isAuthenticated()) {
-      this.snackBar.open('Please login to manage your wishlist', 'Login', { duration: 3000 })
+      this.snackBar.open('Please sign in to save items.', 'Sign In', { duration: 4000 })
         .onAction().subscribe(() => {
-          // You might want to redirect to login here
+          // Route to login
         });
       return;
     }
 
     if (this.isInWishlist()) {
       this.wishlistService.removeFromWishlistByProductId(this.product.id).subscribe({
-        next: () => this.snackBar.open('Removed from wishlist', 'OK', { duration: 2000 }),
-        error: () => this.snackBar.open('Failed to remove from wishlist', 'OK', { duration: 2000 })
+        next: () => this.snackBar.open('Item removed from wishlist.', 'Dismiss', { duration: 3000 }),
+        error: () => this.snackBar.open('Unable to update wishlist.', 'Dismiss', { duration: 3000, panelClass: 'snackbar-error' })
       });
     } else {
       this.wishlistService.addToWishlist(this.product.id).subscribe({
-        next: () => this.snackBar.open('Added to wishlist', 'OK', { duration: 2000 }),
-        error: () => this.snackBar.open('Failed to add to wishlist', 'OK', { duration: 2000 })
+        next: () => this.snackBar.open('Item saved to wishlist.', 'View', { duration: 3000 }),
+        error: () => this.snackBar.open('Unable to save item.', 'Dismiss', { duration: 3000, panelClass: 'snackbar-error' })
       });
     }
   }

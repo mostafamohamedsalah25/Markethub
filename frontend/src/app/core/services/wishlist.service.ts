@@ -6,6 +6,7 @@ import { environment } from '../../../environments/environment';
 export interface WishlistItem {
     id: number;
     product: any;
+    product_details?: any; // <-- السطر ده اللي كان ناقص
     created_at: string;
 }
 

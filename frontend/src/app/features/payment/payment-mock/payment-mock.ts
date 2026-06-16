@@ -1,17 +1,13 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-
 import { PaymentService } from '../../../core/services/payment.service';
 import { UiService } from '../../../core/services/ui.service';
 
 @Component({
   selector: 'app-payment-mock',
   standalone: true,
-  imports: [CommonModule, RouterLink, MatButtonModule, MatCardModule, MatProgressSpinnerModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './payment-mock.html',
 })
 export class PaymentMockComponent implements OnInit {

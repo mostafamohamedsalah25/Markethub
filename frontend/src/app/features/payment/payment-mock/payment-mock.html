@@ -1,15 +1,35 @@
-<div class="max-w-md mx-auto px-4 py-12">
-  <mat-card class="p-6">
-    <h1 class="text-xl font-bold text-slate-900 mb-2">Mock payment</h1>
-    <p class="text-slate-600 text-sm mb-6">Development provider — choose an outcome to simulate.</p>
+<div class="min-h-[calc(100vh-80px)] flex items-center justify-center p-6 bg-surface">
+  <div class="w-full max-w-sm p-8 bg-surface-container-low border-2 border-dashed border-outline-variant rounded-[2rem] shadow-sm animate-fade-in relative">
+    
+    <div class="absolute -top-3 -right-3">
+      <span class="bg-primary text-white text-[9px] font-extrabold uppercase tracking-widest px-3 py-1 rounded-full shadow-md">Dev Mode</span>
+    </div>
+
+    <div class="text-center mb-8 mt-2">
+      <div class="w-16 h-16 rounded-2xl bg-surface-container flex items-center justify-center mx-auto mb-4 border border-outline">
+        <span class="material-symbols-outlined text-[32px] text-on-surface-variant">developer_mode</span>
+      </div>
+      <h1 class="text-2xl font-extrabold text-on-surface tracking-tight mb-2">Mock Payment</h1>
+      <p class="text-xs font-bold text-on-surface-variant uppercase tracking-widest">Choose an outcome to simulate.</p>
+    </div>
+
     @if (processing()) {
-      <div class="flex justify-center py-4"><mat-spinner diameter="36"></mat-spinner></div>
+      <div class="flex flex-col items-center justify-center py-6 gap-4">
+        <span class="w-10 h-10 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></span>
+        <span class="text-xs font-extrabold text-primary uppercase tracking-widest">Processing...</span>
+      </div>
     } @else {
       <div class="flex flex-col gap-3">
-        <button mat-flat-button color="primary" (click)="confirm('succeeded')">Simulate success</button>
-        <button mat-stroked-button color="warn" (click)="confirm('failed')">Simulate failure</button>
-        <a mat-button routerLink="/my-orders">Back to orders</a>
+        <button (click)="confirm('succeeded')" class="mh-btn mh-btn-brand w-full py-3.5 shadow-md shadow-primary/20 flex justify-center items-center gap-2">
+          <span class="material-symbols-outlined text-[18px]">check_circle</span> Simulate Success
+        </button>
+        <button (click)="confirm('failed')" class="w-full py-3.5 rounded-xl border-2 border-error/50 text-error font-extrabold text-sm flex items-center justify-center gap-2 hover:bg-error-bg transition-colors">
+          <span class="material-symbols-outlined text-[18px]">error</span> Simulate Failure
+        </button>
+        <a routerLink="/my-orders" class="mt-4 text-center text-xs font-bold text-on-surface-variant hover:text-primary transition-colors uppercase tracking-widest">
+          Cancel & Back to Orders
+        </a>
       </div>
     }
-  </mat-card>
+  </div>
 </div>

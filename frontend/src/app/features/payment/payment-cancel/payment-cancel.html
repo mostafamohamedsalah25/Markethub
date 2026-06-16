@@ -1,9 +1,24 @@
-<div class="max-w-lg mx-auto px-4 py-16 text-center">
-  <mat-icon class="!w-16 !h-16 !text-5xl text-amber-500">cancel</mat-icon>
-  <h1 class="text-2xl font-bold text-slate-900 mt-4">Payment cancelled</h1>
-  <p class="text-slate-600 mt-2">No charge was made. Your order remains pending — you can pay from My Orders.</p>
-  <div class="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
-    <a mat-flat-button color="primary" routerLink="/my-orders">My orders</a>
-    <a mat-stroked-button routerLink="/cart">Back to cart</a>
+<div class="min-h-[calc(100vh-80px)] flex items-center justify-center p-6 bg-surface">
+  <div class="w-full max-w-md p-10 flex flex-col items-center text-center bg-surface-container-low border border-outline rounded-[2rem] shadow-sm animate-scale-in relative overflow-hidden">
+    
+    <div class="absolute -top-20 -left-20 w-40 h-40 rounded-full blur-[60px] opacity-20 pointer-events-none bg-amber-500"></div>
+
+    <div class="w-20 h-20 rounded-[1.5rem] bg-amber-50 text-amber-500 flex items-center justify-center mb-6 shadow-inner border border-amber-100">
+      <span class="material-symbols-outlined text-[48px]">cancel</span>
+    </div>
+
+    <h1 class="text-2xl font-extrabold text-on-surface mb-3 tracking-tight">Payment Cancelled</h1>
+    <p class="text-sm font-medium text-on-surface-variant mb-10 leading-relaxed">
+      No charge was made to your card. Your order has been saved and is waiting for you in "My Orders".
+    </p>
+
+    <div class="flex flex-col sm:flex-row gap-3 w-full">
+      <a routerLink="/my-orders" class="mh-btn mh-btn-brand flex-1 shadow-lg shadow-primary/20">
+        <span class="material-symbols-outlined text-[20px]">receipt_long</span> My Orders
+      </a>
+      <a routerLink="/cart" class="mh-btn mh-btn-outline flex-1 bg-surface">
+        Back to Cart
+      </a>
+    </div>
   </div>
 </div>

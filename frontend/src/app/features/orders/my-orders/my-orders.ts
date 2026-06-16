@@ -1,7 +1,6 @@
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
-import { MatButtonModule } from '@angular/material/button';
+import { Router, RouterLink } from '@angular/router';
 import { OrdersService, Order } from '../../../core/services/orders.service';
 import { PaymentService } from '../../../core/services/payment.service';
 import { UiService } from '../../../core/services/ui.service';
@@ -9,9 +8,8 @@ import { UiService } from '../../../core/services/ui.service';
 @Component({
   selector: 'app-my-orders',
   standalone: true,
-  imports: [CommonModule, MatButtonModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './my-orders.html',
-  styleUrl: './my-orders.scss',
 })
 export class MyOrdersComponent implements OnInit {
   private ordersService = inject(OrdersService);
@@ -21,7 +19,6 @@ export class MyOrdersComponent implements OnInit {
   private cdr = inject(ChangeDetectorRef);
 
   payingOrderId: number | null = null;
-
   orders: Order[] = [];
   loading = true;
 
@@ -40,16 +37,17 @@ export class MyOrdersComponent implements OnInit {
     });
   }
 
+  // Updated to use Premium Tailwind colors
   statusClass(status: string): string {
     const map: Record<string, string> = {
-      pending: 'bg-amber-100 text-amber-800',
-      accepted: 'bg-blue-100 text-blue-800',
-      rejected: 'bg-red-100 text-red-800',
-      shipped: 'bg-indigo-100 text-indigo-800',
-      delivered: 'bg-emerald-100 text-emerald-800',
-      cancelled: 'bg-gray-100 text-gray-700',
+      pending: 'bg-amber-50 text-amber-600 border-amber-200',
+      accepted: 'bg-blue-50 text-blue-600 border-blue-200',
+      rejected: 'bg-red-50 text-red-600 border-red-200',
+      shipped: 'bg-indigo-50 text-indigo-600 border-indigo-200',
+      delivered: 'bg-emerald-50 text-emerald-600 border-emerald-200',
+      cancelled: 'bg-slate-100 text-slate-600 border-slate-200',
     };
-    return map[status] ?? 'bg-gray-100 text-gray-700';
+    return map[status] ?? 'bg-surface-container-highest text-on-surface-variant border-outline';
   }
 
   payOrder(order: Order): void {

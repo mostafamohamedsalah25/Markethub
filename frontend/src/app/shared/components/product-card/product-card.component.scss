@@ -1,14 +1,19 @@
-.material-symbols-outlined {
-  &.fill-1 {
-    font-variation-settings: 'FILL' 1;
-  }
-}
+/* ============================================================
+   PRODUCT CARD STYLES
+   ============================================================ */
+
+/*
+  Note: The heavy lifting for glassmorphism, borders, and general transitions
+  is handled by the global `.mh-card-hover` class in styles.scss.
+*/
 
 :host {
   display: block;
-  transition: transform 0.2s ease-in-out;
+  height: 100%;
+}
 
-  &:hover {
-    transform: translateY(-4px);
+.material-symbols-outlined {
+  &.fill-1 {
+    font-variation-settings: 'FILL' 1;
   }
 }

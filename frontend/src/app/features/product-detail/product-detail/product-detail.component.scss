@@ -1,0 +1,49 @@
+/* ============================================================
+   PRODUCT DETAIL STYLES
+   ============================================================ */
+
+:host {
+    display: block;
+}
+
+// Custom styles for product description HTML content
+.product-description {
+    p {
+        margin-bottom: 1rem;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+    }
+
+    ul {
+        list-style-type: disc;
+        padding-left: 1.5rem;
+        margin-bottom: 1rem;
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+    }
+
+    strong,
+    b {
+        color: var(--mh-text-primary);
+        font-weight: 800;
+    }
+}
+
+// Hide scrollbar for the image thumbnails container
+.hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+// Cursor styling for the main image to indicate it can be inspected
+.cursor-zoom-in {
+    cursor: zoom-in;
+}

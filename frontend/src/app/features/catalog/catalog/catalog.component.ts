@@ -72,6 +72,17 @@ export class CatalogComponent implements OnInit, OnDestroy {
     }
   }
 
+  filtersOpen = {
+    categories: true,
+    price: true,
+    availability: true,
+    rating: false
+  };
+
+  toggleFilter(section: 'categories' | 'price' | 'availability' | 'rating'): void {
+    this.filtersOpen[section] = !this.filtersOpen[section];
+  }
+
   // Filter state
   searchTerm = '';
   selectedCategory: string | null = null;
@@ -187,16 +198,19 @@ export class CatalogComponent implements OnInit, OnDestroy {
 
     this.productService.getProducts(params).subscribe({
       next: (res: any) => {
+        this.totalPages = Math.ceil(this.totalCount / this.pageSize);
         if (Array.isArray(res)) {
           // Flat array response (no pagination from backend)
-          this.products = res;
           this.totalCount = res.length;
+
+          const startIndex = (this.page - 1) * this.pageSize;
+          const endIndex = startIndex + this.pageSize;
+          this.products = res.slice(startIndex, endIndex);
         } else {
           // DRF paginated response: { count, next, previous, results }
           this.products = res.results || [];
           this.totalCount = res.count || 0;
         }
-        this.totalPages = Math.ceil(this.totalCount / this.pageSize);
         this.isLoading = false;
         this.cdr.markForCheck();
       },

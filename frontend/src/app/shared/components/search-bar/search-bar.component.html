@@ -1,21 +1,21 @@
 <div class="relative w-full max-w-md" appClickOutside (clickOutside)="closeOverlay()">
-  <div class="flex items-center bg-slate-100 rounded-full px-4 py-2 border border-transparent focus-within:border-indigo-400 focus-within:bg-white focus-within:shadow-sm transition-all duration-200">
-    <span class="material-symbols-outlined text-slate-400 text-sm mr-2 select-none">search</span>
+  <div class="flex items-center bg-surface-container border border-outline focus-within:bg-surface focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/10 rounded-full px-4 py-2 transition-all duration-300">
+    <span class="material-symbols-outlined text-on-surface-variant text-[20px] mr-2 select-none">search</span>
     <input 
       type="text" 
       [value]="query"
       (input)="onInput($event)"
       (focus)="onFocus()"
       (keydown)="onKeyDown($event)"
-      placeholder="Search products..." 
-      class="bg-transparent border-none focus:ring-0 text-sm w-full text-slate-900 outline-none placeholder:text-slate-400"
+      placeholder="Search for products, brands..." 
+      class="bg-transparent border-none focus:ring-0 text-sm font-medium w-full text-on-surface outline-none placeholder:text-on-surface-variant/60"
       autocomplete="off"
     >
     @if (isLoading) {
-      <div class="w-4 h-4 border-2 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin ml-2"></div>
+      <div class="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin ml-2"></div>
     } @else if (query) {
-      <button (click)="query = ''; closeOverlay()" class="ml-2 text-slate-400 hover:text-slate-600 transition-colors">
-        <span class="material-symbols-outlined !text-sm">close</span>
+      <button (click)="query = ''; closeOverlay()" class="ml-2 text-on-surface-variant hover:text-on-surface transition-colors flex items-center justify-center outline-none">
+        <span class="material-symbols-outlined text-[18px]">close</span>
       </button>
     }
   </div>

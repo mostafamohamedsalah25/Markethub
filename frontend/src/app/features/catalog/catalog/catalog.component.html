@@ -1,354 +1,393 @@
-﻿<div class="max-w-7xl mx-auto px-6 py-12">
+﻿<div class="mh-container py-10 animate-fade-in">
 
-  <!-- Breadcrumb -->
-  <div class="text-sm text-on-surface-variant mb-6">
-    <a routerLink="/" class="hover:text-primary">Home</a>
-    <span class="mx-2">/</span>
-    <span class="text-on-surface">Catalog</span>
+  <div class="flex items-center gap-2 text-[13px] font-semibold tracking-wide text-on-surface-variant uppercase mb-8">
+    <a routerLink="/" class="hover:text-primary transition-colors">Home</a>
+    <span class="opacity-50">/</span>
+    <span class="text-on-surface">{{ selectedCategory ? (selectedCategory | titlecase) : 'All Products' }}</span>
   </div>
 
-  <!-- Top Bar -->
-  <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-    <div>
-      <h1 class="text-3xl font-bold text-on-surface mb-2">
+  <div class="flex flex-col lg:flex-row justify-between items-start lg:items-end mb-10 gap-6 border-b border-outline pb-6">
+    <div class="space-y-1">
+      <h1 class="text-3xl md:text-4xl font-extrabold text-on-surface uppercase tracking-tight">
         {{ selectedCategory ? (selectedCategory | titlecase) : 'All Products' }}
       </h1>
-      <p class="text-on-surface-variant">
+      <p class="text-sm font-medium text-on-surface-variant">
         @if (totalCount > 0) {
-        Showing {{ showingFrom }} - {{ showingTo }} of {{ totalCount }} products
+          Showing <span class="text-on-surface font-bold">{{ showingFrom }} - {{ showingTo }}</span> of {{ totalCount }} products
         } @else if (!isLoading) {
-        No products found
+          No products found in this category.
         }
       </p>
     </div>
 
-    <div class="flex items-center gap-4 w-full md:w-auto">
-      <!-- Search Input -->
-      <div class="relative w-full md:w-64">
-        <span
-          class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
-        <input type="text" [ngModel]="searchTerm" (ngModelChange)="onSearchChange($event)"
-          placeholder="Search products..."
-          class="w-full pl-10 pr-4 py-2 bg-surface-container rounded-lg border-none focus:ring-2 focus:ring-primary outline-none">
+    <div class="flex flex-wrap items-center gap-4 w-full lg:w-auto">
+      
+      <div class="relative w-full sm:w-64 group">
+        <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px] transition-colors group-focus-within:text-primary">search</span>
+        <input 
+          type="text" 
+          [ngModel]="searchTerm" 
+          (ngModelChange)="onSearchChange($event)"
+          placeholder="Search collections..."
+          class="w-full pl-11 pr-4 py-2.5 bg-surface-container-low rounded-full border border-outline text-sm font-medium text-on-surface focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all placeholder:text-on-surface-variant/60"
+        >
       </div>
 
-      <!-- Sort Dropdown -->
-      <div class="relative flex-shrink-0 bg-surface-container rounded-lg px-2">
-        <select [(ngModel)]="ordering" (change)="onOrderingChange()"
-          class="bg-transparent border-none py-2 pr-8 focus:ring-0 cursor-pointer text-on-surface font-label-md">
-          <option value="-created_at">Newest</option>
+      <div class="relative flex-shrink-0 bg-surface-container-low rounded-full border border-outline hover:border-outline-variant transition-all focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/10 px-4 py-2.5 flex items-center">
+        <select 
+          [(ngModel)]="ordering" 
+          (change)="onOrderingChange()"
+          class="bg-transparent border-none p-0 pr-6 text-sm font-bold text-on-surface focus:ring-0 cursor-pointer outline-none appearance-none"
+        >
+          <option value="-created_at">Newest Arrivals</option>
           <option value="created_at">Oldest</option>
           <option value="price">Price: Low to High</option>
           <option value="-price">Price: High to Low</option>
         </select>
+        <span class="material-symbols-outlined absolute right-3 pointer-events-none text-on-surface-variant text-[18px]">expand_more</span>
       </div>
 
-      <!-- View Toggles -->
-      <div class="hidden md:flex bg-surface-container rounded-lg p-1">
-        <button (click)="viewMode = 'grid'" [class.bg-white]="viewMode === 'grid'"
-          [class.shadow-sm]="viewMode === 'grid'"
-          class="p-1.5 rounded-md text-on-surface-variant hover:text-on-surface transition-colors">
-          <span class="material-symbols-outlined text-sm">grid_view</span>
+      <div class="hidden sm:flex bg-surface-container rounded-full p-1 border border-outline">
+        <button (click)="viewMode = 'grid'" 
+          [class.bg-surface]="viewMode === 'grid'" [class.shadow-sm]="viewMode === 'grid'" [class.text-on-surface]="viewMode === 'grid'"
+          class="p-2 rounded-full text-on-surface-variant hover:text-on-surface transition-all flex items-center justify-center">
+          <span class="material-symbols-outlined text-[20px]">grid_view</span>
         </button>
-        <button (click)="viewMode = 'list'" [class.bg-white]="viewMode === 'list'"
-          [class.shadow-sm]="viewMode === 'list'"
-          class="p-1.5 rounded-md text-on-surface-variant hover:text-on-surface transition-colors">
-          <span class="material-symbols-outlined text-sm">view_list</span>
+        <button (click)="viewMode = 'list'" 
+          [class.bg-surface]="viewMode === 'list'" [class.shadow-sm]="viewMode === 'list'" [class.text-on-surface]="viewMode === 'list'"
+          class="p-2 rounded-full text-on-surface-variant hover:text-on-surface transition-all flex items-center justify-center">
+          <span class="material-symbols-outlined text-[20px]">view_list</span>
         </button>
       </div>
     </div>
   </div>
 
-  <div class="flex flex-col lg:flex-row gap-10">
-    <!-- Left Sidebar Filters -->
-    <aside class="w-full lg:w-64 flex-shrink-0 space-y-8">
+  <div class="flex flex-col lg:flex-row gap-12">
+    
+    <aside class="w-full lg:w-64 flex-shrink-0 space-y-6 lg:sticky lg:top-[100px] h-fit">
 
-      <!-- Clear Filters -->
-      <div class="flex justify-between items-center">
-        <h3 class="font-bold text-on-surface text-lg">Filters</h3>
-        <button (click)="clearAllFilters()" class="text-sm text-primary hover:underline font-medium">Clear All</button>
+      <div class="flex justify-between items-center bg-surface-container-low p-4 rounded-2xl border border-outline mb-2">
+        <span class="font-extrabold text-sm uppercase tracking-widest text-on-surface">Filters</span>
+        <button (click)="clearAllFilters()" class="text-xs font-bold text-primary hover:text-primary-hover transition-colors flex items-center gap-1">
+          <span class="material-symbols-outlined text-[14px]">refresh</span> Reset
+        </button>
       </div>
 
-      <!-- Categories -->
-      <div class="space-y-4">
-        <h4 class="font-bold text-on-surface">Category</h4>
-        <ul class="space-y-2">
-          <li>
-            <button (click)="onCategorySelect(null)" [class.text-primary]="!selectedCategory"
-              [class.font-bold]="!selectedCategory" [class.border-l-2]="!selectedCategory"
-              [class.border-primary]="!selectedCategory"
-              class="w-full text-left pl-3 py-1 text-on-surface-variant hover:text-primary transition-colors text-sm">
-              All Categories
-            </button>
-          </li>
-          @for (cat of categories; track cat.id) {
-          <li>
-            <button (click)="onCategorySelect(cat.slug)" [class.text-primary]="selectedCategory === cat.slug"
-              [class.font-bold]="selectedCategory === cat.slug" [class.border-l-2]="selectedCategory === cat.slug"
-              [class.border-primary]="selectedCategory === cat.slug"
-              class="w-full text-left pl-3 py-1 text-on-surface-variant hover:text-primary transition-colors text-sm">
-              {{ cat.name }}
-            </button>
-          </li>
-          }
-        </ul>
+      <div class="border-b border-outline pb-4">
+        <button (click)="toggleFilter('categories')" class="flex items-center justify-between w-full group py-2">
+          <h4 class="font-extrabold text-xs uppercase tracking-widest text-on-surface group-hover:text-primary transition-colors">Categories</h4>
+          <span class="material-symbols-outlined text-on-surface-variant transition-transform duration-300" [class.rotate-180]="filtersOpen.categories">expand_more</span>
+        </button>
+        
+        @if (filtersOpen.categories) {
+          <div class="animate-fade-in pt-3">
+            <ul class="space-y-1 max-h-[240px] overflow-y-auto pr-2 custom-scrollbar">
+              <li>
+                <button (click)="onCategorySelect(null)" 
+                  [class.bg-surface-container]="!selectedCategory" [class.text-primary]="!selectedCategory" [class.font-bold]="!selectedCategory"
+                  class="w-full text-left px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all text-sm">
+                  All Categories
+                </button>
+              </li>
+              @for (cat of categories; track cat.id) {
+                <li>
+                  <button (click)="onCategorySelect(cat.slug)" 
+                    [class.bg-surface-container]="selectedCategory === cat.slug" [class.text-primary]="selectedCategory === cat.slug" [class.font-bold]="selectedCategory === cat.slug"
+                    class="w-full text-left px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all text-sm">
+                    {{ cat.name }}
+                  </button>
+                </li>
+              }
+            </ul>
+          </div>
+        }
       </div>
 
-      <hr class="border-surface-container-high">
-
-      <!-- Price Range -->
-      <div class="space-y-4">
-        <h4 class="font-bold text-on-surface">Price Range</h4>
-        <div class="flex items-center gap-3">
-          <input type="number" [(ngModel)]="minPrice" (blur)="onPriceChange()" placeholder="Min"
-            class="w-full bg-surface-container rounded-lg border-none px-3 py-2 text-sm focus:ring-2 focus:ring-primary outline-none">
-          <span class="text-on-surface-variant">-</span>
-          <input type="number" [(ngModel)]="maxPrice" (blur)="onPriceChange()" placeholder="Max"
-            class="w-full bg-surface-container rounded-lg border-none px-3 py-2 text-sm focus:ring-2 focus:ring-primary outline-none">
-        </div>
+      <div class="border-b border-outline pb-4">
+        <button (click)="toggleFilter('price')" class="flex items-center justify-between w-full group py-2">
+          <h4 class="font-extrabold text-xs uppercase tracking-widest text-on-surface group-hover:text-primary transition-colors">Price Range</h4>
+          <span class="material-symbols-outlined text-on-surface-variant transition-transform duration-300" [class.rotate-180]="filtersOpen.price">expand_more</span>
+        </button>
+        
+        @if (filtersOpen.price) {
+          <div class="animate-fade-in pt-4 flex items-center gap-3">
+            <div class="relative w-full">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-on-surface-variant">$</span>
+              <input type="number" [(ngModel)]="minPrice" (blur)="onPriceChange()" placeholder="Min"
+                class="w-full bg-surface-container-low rounded-lg border border-outline pl-7 pr-3 py-2 text-sm font-semibold focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all">
+            </div>
+            <span class="text-on-surface-variant font-bold">-</span>
+            <div class="relative w-full">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-on-surface-variant">$</span>
+              <input type="number" [(ngModel)]="maxPrice" (blur)="onPriceChange()" placeholder="Max"
+                class="w-full bg-surface-container-low rounded-lg border border-outline pl-7 pr-3 py-2 text-sm font-semibold focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all">
+            </div>
+          </div>
+        }
       </div>
 
-      <hr class="border-surface-container-high">
-
-      <!-- Availability -->
-      <div class="space-y-4">
-        <h4 class="font-bold text-on-surface">Availability</h4>
-        <label class="flex items-center gap-3 cursor-pointer group">
-          <input type="checkbox" [(ngModel)]="availability" (change)="onAvailabilityChange()"
-            class="w-5 h-5 rounded border-outline text-primary focus:ring-primary/50 cursor-pointer">
-          <span class="text-on-surface-variant group-hover:text-on-surface transition-colors text-sm">In Stock
-            Only</span>
-        </label>
+      <div class="border-b border-outline pb-4">
+        <button (click)="toggleFilter('availability')" class="flex items-center justify-between w-full group py-2">
+          <h4 class="font-extrabold text-xs uppercase tracking-widest text-on-surface group-hover:text-primary transition-colors">Availability</h4>
+          <span class="material-symbols-outlined text-on-surface-variant transition-transform duration-300" [class.rotate-180]="filtersOpen.availability">expand_more</span>
+        </button>
+        
+        @if (filtersOpen.availability) {
+          <div class="animate-fade-in pt-3">
+            <label class="flex items-center gap-3 cursor-pointer group">
+              <div class="relative flex items-center justify-center w-5 h-5">
+                <input type="checkbox" [(ngModel)]="availability" (change)="onAvailabilityChange()"
+                  class="peer appearance-none w-5 h-5 border-2 border-outline rounded-[4px] checked:bg-primary checked:border-primary transition-all cursor-pointer">
+                <span class="material-symbols-outlined absolute text-white text-[16px] pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity">check</span>
+              </div>
+              <span class="text-on-surface-variant font-semibold text-sm group-hover:text-on-surface transition-colors">In Stock Only</span>
+            </label>
+          </div>
+        }
       </div>
 
-      <hr class="border-surface-container-high">
-
-      <!-- Rating (UI Only) -->
-      <div class="space-y-4">
-        <h4 class="font-bold text-on-surface">Rating</h4>
-        <div class="space-y-3">
-          @for (rating of [5, 4, 3, 2, 1]; track rating) {
-          <label class="flex items-center gap-3 cursor-pointer group">
-            <input (change)="showComingSoon('Rating Filter')" type="radio" name="rating" [value]="rating"
-              class="w-4 h-4 text-primary focus:ring-primary/50 cursor-pointer">
-            <app-star-rating [rating]="rating" [count]="0"></app-star-rating>
-            <span class="text-on-surface-variant text-sm ml-1 group-hover:text-on-surface">
-              {{ rating === 5 ? '5.0' : rating + '.0 & up' }}
-            </span>
-          </label>
-          }
-        </div>
+      <div class="pb-4">
+        <button (click)="toggleFilter('rating')" class="flex items-center justify-between w-full group py-2">
+          <h4 class="font-extrabold text-xs uppercase tracking-widest text-on-surface group-hover:text-primary transition-colors">Rating</h4>
+          <span class="material-symbols-outlined text-on-surface-variant transition-transform duration-300" [class.rotate-180]="filtersOpen.rating">expand_more</span>
+        </button>
+        
+        @if (filtersOpen.rating) {
+          <div class="animate-fade-in pt-3 space-y-3">
+            @for (rating of [5, 4, 3, 2, 1]; track rating) {
+              <label class="flex items-center gap-3 cursor-pointer group">
+                <input (change)="showComingSoon('Rating Filter')" type="radio" name="rating" [value]="rating"
+                  class="appearance-none w-4 h-4 border-2 border-outline rounded-full checked:border-[5px] checked:border-primary transition-all cursor-pointer">
+                <app-star-rating [rating]="rating" [count]="0"></app-star-rating>
+                <span class="text-on-surface-variant text-xs font-semibold ml-1 group-hover:text-on-surface">
+                  {{ rating === 5 ? '5.0' : rating + '.0 & up' }}
+                </span>
+              </label>
+            }
+          </div>
+        }
       </div>
 
     </aside>
 
-    @if (catalogView === 'categories') {
-    <div class="flex-1">
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        @for (cat of categories; track cat.id) {
-        <button (click)="browseCategory(cat.slug)"
-          class="group text-left p-6 bg-surface-container rounded-2xl border border-surface-container-high hover:border-primary hover:shadow-md transition-all">
-          <div class="aspect-video rounded-xl overflow-hidden bg-surface-container-high mb-4">
-            <img [src]="cat.image || 'https://placehold.co/600x400/e2e8f0/475569?text=Category'"
-              (error)="onImageError($event)" [alt]="cat.name"
-              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-          </div>
-          <h3 class="text-xl font-bold text-on-surface group-hover:text-primary">{{ cat.name }}</h3>
-          <p class="text-sm text-on-surface-variant mt-1">Browse products â†’</p>
-        </button>
-        }
-      </div>
-      @if (categories.length === 0) {
-      <p class="text-center text-on-surface-variant py-12">No categories available.</p>
-      }
-    </div>
-    } @else {
-    <div class="flex-1">
+    <!-- Right Content Area -->
+    <div class="flex-1 min-w-0 mb-8">
 
-      <!-- Error State -->
-      @if (hasError) {
-      <div
-        class="bg-error-container text-on-error-container p-6 rounded-xl flex flex-col items-center justify-center text-center space-y-4">
-        <span class="material-symbols-outlined text-4xl">error</span>
-        <div>
-          <h3 class="font-bold text-lg">Oops! Something went wrong.</h3>
-          <p>We couldn't load the products. Please try again.</p>
-        </div>
-        <button (click)="fetchProducts()"
-          class="bg-on-error-container text-white px-6 py-2 rounded-lg font-label-md hover:opacity-90">
-          Retry
-        </button>
-      </div>
-      }
-
-      <!-- Grid Layout -->
-      @if (viewMode === 'grid') {
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-
-        @for (product of products; track product.id) {
-        <app-product-card [product]="product"></app-product-card>
-        }
-
-        @if (isLoading) {
-        @for (i of [1,2,3,4,5,6]; track i) {
-        <div class="space-y-4 animate-pulse">
-          <div class="aspect-[4/5] bg-surface-container rounded-lg"></div>
-          <div class="h-4 bg-surface-container rounded w-3/4"></div>
-          <div class="h-4 bg-surface-container rounded w-1/2"></div>
-        </div>
-        }
-        }
-      </div>
-      }
-      <!-- List Layout -->
-      @else {
-      <div class="flex flex-col gap-6">
-        @for (product of products; track product.id) {
-        <div
-          class="flex gap-6 p-4 border border-surface-container-high rounded-xl hover:shadow-md transition-shadow group">
-          <!-- Image -->
-          <div [routerLink]="['/products', product.slug]"
-            class="w-48 aspect-[4/5] flex-shrink-0 rounded-lg overflow-hidden relative bg-surface-container cursor-pointer">
-            <img [src]="product.images | primaryImage" (error)="onImageError($event)" [alt]="product.name"
-              class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
-          </div>
-
-          <!-- Content -->
-          <div class="flex-1 flex flex-col justify-between py-2">
-            <div>
-              <div class="flex justify-between items-start mb-2">
-                <h3 [routerLink]="['/products', product.slug]"
-                  class="text-xl font-bold text-on-surface cursor-pointer hover:text-primary transition-colors">{{
-                  product.name }}</h3>
-                <div class="text-right">
-                  @if (product.discount_price && +product.discount_price < +product.price) { <p
-                    class="text-primary font-bold text-lg">{{ product.discount_price | currency }}</p>
-                    <p class="text-on-surface-variant line-through text-sm">{{ product.price | currency }}</p>
-                    } @else {
-                    <p class="text-primary font-bold text-lg">{{ product.price | currency }}</p>
-                    }
+      <!-- ========================================== -->
+      <!-- 1. CATEGORIES VIEW (The missing part)      -->
+      <!-- ========================================== -->
+      @if (catalogView === 'categories') {
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-8 animate-fade-in-up">
+          @for (cat of categories; track cat.id) {
+            <div (click)="browseCategory(cat.slug)" class="relative h-64 rounded-3xl overflow-hidden cursor-pointer group mh-card-hover border-none">
+              <!-- Category Image -->
+              <img 
+                [src]="cat.image || 'https://placehold.co/600x400/1E293B/475569?text=' + cat.name" 
+                (error)="onImageError($event)" 
+                [alt]="cat.name" 
+                class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110" 
+              />
+              <!-- Dark Gradient Overlay -->
+              <div class="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-900/30 to-transparent transition-opacity duration-500"></div>
+              
+              <!-- Content -->
+              <div class="absolute inset-x-0 bottom-0 p-6 z-20 flex flex-col justify-end transform transition-transform duration-500 group-hover:-translate-y-1">
+                <h3 class="font-extrabold text-xl text-white uppercase tracking-wider drop-shadow-md">{{ cat.name }}</h3>
+                <div class="flex items-center gap-2 text-[11px] font-extrabold text-primary opacity-0 group-hover:opacity-100 transition-all duration-300 uppercase tracking-widest mt-1">
+                  <span>Browse Products</span>
+                  <span class="material-symbols-outlined !text-sm transition-transform duration-300 group-hover:translate-x-1">arrow_forward</span>
                 </div>
               </div>
-
-              <div class="flex items-center gap-2 mb-4">
-                <app-star-rating [rating]="0" [count]="0"></app-star-rating>
-                <span [class.bg-emerald-100]="product.stock > 0" [class.text-emerald-800]="product.stock > 0"
-                  [class.bg-red-100]="product.stock === 0" [class.text-red-800]="product.stock === 0"
-                  class="text-xs px-2 py-0.5 rounded">
-                  {{ product.stock > 0 ? 'In Stock' : 'Out of Stock' }}
-                </span>
-              </div>
-
-              <p class="text-on-surface-variant text-sm line-clamp-3">
-                {{ product.description }}
-              </p>
             </div>
+          }
+        </div>
+        
+        @if (categories.length === 0) {
+          <p class="text-center text-on-surface-variant py-12 font-medium">No categories available at the moment.</p>
+        }
+      } 
+      <!-- ========================================== -->
+      <!-- 2. PRODUCTS VIEW (Grid / List)             -->
+      <!-- ========================================== -->
+      @else {
 
-            <div class="flex items-center gap-4 mt-6">
-              <button (click)="addToCart($event, product)" [disabled]="product.stock === 0"
-                class="bg-primary text-on-primary px-8 py-3 rounded-lg font-label-md hover:opacity-90 transition-all active:scale-95 shadow-lg shadow-primary/20 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-                <span class="material-symbols-outlined text-sm">shopping_cart</span>
-                Add to Cart
-              </button>
-              <button (click)="toggleWishlist($event, product)" [class.text-red-500]="isWishlisted(product.id)"
-                [class.border-red-200]="isWishlisted(product.id)" [class.bg-red-50]="isWishlisted(product.id)"
-                class="p-3 rounded-lg border border-outline text-on-surface-variant hover:text-primary hover:border-primary transition-colors">
-                <span class="material-symbols-outlined"
-                  [style.font-variation-settings]="'\'FILL\' ' + (isWishlisted(product.id) ? 1 : 0)">
-                  favorite
-                </span>
-              </button>
+        <!-- Error State -->
+        @if (hasError) {
+          <div class="bg-error-bg border border-error/20 p-10 rounded-3xl flex flex-col items-center justify-center text-center space-y-4 shadow-sm animate-fade-in">
+            <div class="w-16 h-16 rounded-full bg-error/10 flex items-center justify-center">
+              <span class="material-symbols-outlined text-3xl text-error">wifi_off</span>
             </div>
+            <div>
+              <h3 class="font-extrabold text-xl text-on-surface mb-1">Connection Lost</h3>
+              <p class="text-sm font-medium text-on-surface-variant">We couldn't load the products. Please check your connection.</p>
+            </div>
+            <button (click)="fetchProducts()" class="mh-btn mh-btn-outline mt-2">Try Again</button>
           </div>
-        </div>
         }
 
-        @if (isLoading) {
-        @for (i of [1,2,3]; track i) {
-        <div class="flex gap-6 p-4 border border-surface-container-high rounded-xl animate-pulse">
-          <div class="w-48 aspect-[4/5] bg-surface-container rounded-lg"></div>
-          <div class="flex-1 py-2 space-y-4">
-            <div class="h-6 bg-surface-container rounded w-1/3"></div>
-            <div class="h-4 bg-surface-container rounded w-1/4"></div>
-            <div class="h-20 bg-surface-container rounded w-full"></div>
-            <div class="h-10 bg-surface-container rounded w-32 mt-auto"></div>
-          </div>
-        </div>
-        }
-        }
-      </div>
-      }
-
-      <!-- Empty State -->
-      @if (products.length === 0 && !isLoading && !hasError) {
-      <div class="py-20 flex flex-col items-center justify-center text-center bg-surface-container-low rounded-2xl">
-        <div class="w-48 h-48 bg-surface-container rounded-full flex items-center justify-center mb-6">
-          <span class="material-symbols-outlined text-6xl text-primary opacity-50">search_off</span>
-        </div>
-        <h3 class="text-2xl font-bold text-on-surface mb-2">No products found</h3>
-        <p class="text-on-surface-variant mb-8 max-w-md">
-          We couldn't find any products matching your current filters. Try adjusting your search criteria or clearing
-          filters.
-        </p>
-        <button (click)="clearAllFilters()"
-          class="bg-primary text-on-primary px-8 py-3 rounded-lg font-label-md hover:opacity-90 shadow-lg">
-          Clear Filters
-        </button>
-      </div>
-      }
-
-      <!-- Pagination -->
-      @if (totalPages > 1 && !hasError) {
-      <div class="mt-12 flex flex-col sm:flex-row items-center justify-between gap-6">
-
-        <!-- Page Size Selector -->
-        <div class="flex items-center gap-2 text-sm text-on-surface-variant">
-          <span>Show</span>
-          <select [ngModel]="pageSize" (ngModelChange)="onPageSizeChange($event)"
-            class="bg-surface-container rounded-lg border-none px-3 py-2 text-sm focus:ring-2 focus:ring-primary outline-none cursor-pointer text-on-surface">
-            @for (size of pageSizeOptions; track size) {
-            <option [ngValue]="size">{{ size }}</option>
+        <!-- Grid Layout -->
+        @if (viewMode === 'grid' && !hasError) {
+          <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-8 animate-fade-in-up">
+            @for (product of products; track product.id) {
+              <app-product-card [product]="product"></app-product-card>
             }
-          </select>
-          <span>per page</span>
-        </div>
 
-        <!-- Page Numbers -->
-        <nav class="flex items-center gap-1">
-          <!-- Previous -->
-          <button (click)="goToPage(page - 1)" [disabled]="page === 1"
-            class="px-3 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed hover:bg-surface-container text-on-surface-variant">
-            <span class="material-symbols-outlined text-sm">chevron_left</span>
-          </button>
+            <!-- Skeletons -->
+            @if (isLoading) {
+              @for (i of [1,2,3,4,5,6]; track i) {
+                <div class="space-y-4">
+                  <div class="aspect-[4/5] mh-skeleton rounded-2xl"></div>
+                  <div class="h-5 mh-skeleton rounded w-3/4"></div>
+                  <div class="h-5 mh-skeleton rounded w-1/3"></div>
+                </div>
+              }
+            }
+          </div>
+        }
 
-          @for (p of getVisiblePages(); track $index) {
-          @if (p === -1) {
-          <span class="px-2 py-2 text-on-surface-variant text-sm">â€¦</span>
-          } @else {
-          <button (click)="goToPage(p)" [class.bg-primary]="p === page" [class.text-on-primary]="p === page"
-            [class.shadow-md]="p === page" [class.text-on-surface-variant]="p !== page"
-            [class.hover:bg-surface-container]="p !== page"
-            class="w-10 h-10 rounded-lg text-sm font-medium transition-all">
-            {{ p }}
-          </button>
-          }
-          }
+        <!-- Premium List Layout -->
+        @if (viewMode === 'list' && !hasError) {
+          <div class="flex flex-col gap-6 animate-fade-in-up">
+            @for (product of products; track product.id) {
+              <div class="mh-card-hover flex flex-col sm:flex-row gap-0 overflow-hidden border-none rounded-3xl bg-surface-container-low group h-auto sm:h-56">
+                <!-- Image Container -->
+                <div [routerLink]="['/products', product.slug]" class="w-full sm:w-48 flex-shrink-0 relative overflow-hidden bg-black/5 cursor-pointer">
+                  <img [src]="product.images | primaryImage" (error)="onImageError($event)" [alt]="product.name"
+                    class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+                  @if (product.stock === 0) {
+                    <span class="absolute top-3 left-3 mh-badge mh-badge-error shadow-sm">Sold Out</span>
+                  } @else if (product.discount_price && +product.discount_price < +product.price) {
+                    <span class="absolute top-3 left-3 bg-on-surface text-surface text-[9px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-full shadow-md">Sale</span>
+                  }
+                </div>
 
-          <!-- Next -->
-          <button (click)="goToPage(page + 1)" [disabled]="page === totalPages"
-            class="px-3 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed hover:bg-surface-container text-on-surface-variant">
-            <span class="material-symbols-outlined text-sm">chevron_right</span>
-          </button>
-        </nav>
+                <!-- Content Container -->
+                <div class="flex-1 flex flex-col justify-between p-6">
+                  <div>
+                    <div class="flex justify-between items-start gap-4">
+                      <div class="space-y-1">
+                        <h3 [routerLink]="['/products', product.slug]" class="text-xl font-bold text-on-surface cursor-pointer hover:text-primary transition-colors line-clamp-1">
+                          {{ product.name }}
+                        </h3>
+                        <app-star-rating [rating]="product.average_rating || 0" [count]="product.review_count || 0"></app-star-rating>
+                      </div>
+                      <!-- Pricing -->
+                      <div class="text-right flex-shrink-0">
+                        @if (product.discount_price && +product.discount_price < +product.price) { 
+                          <p class="text-lg font-extrabold text-on-surface">{{ product.discount_price | currency }}</p>
+                          <p class="text-on-surface-variant line-through text-xs font-medium">{{ product.price | currency }}</p>
+                        } @else {
+                          <p class="text-lg font-extrabold text-on-surface">{{ product.price | currency }}</p>
+                        }
+                      </div>
+                    </div>
+                    <p class="text-on-surface-variant text-sm line-clamp-2 mt-4 font-medium leading-relaxed">
+                      {{ product.description }}
+                    </p>
+                  </div>
 
-        <!-- Showing text (mobile) -->
-        <p class="text-sm text-on-surface-variant">
-          Page {{ page }} of {{ totalPages }}
-        </p>
-      </div>
-      }
+                  <!-- Actions -->
+                  <div class="flex items-center gap-3 mt-6">
+                    <button (click)="addToCart($event, product)" [disabled]="product.stock === 0"
+                      class="mh-btn mh-btn-brand text-xs px-6 py-2.5 shadow-md flex-1 sm:flex-none">
+                      <span class="material-symbols-outlined text-lg">shopping_cart</span>
+                      Add to Cart
+                    </button>
+                    <button (click)="toggleWishlist($event, product)" 
+                      class="w-11 h-11 rounded-xl flex items-center justify-center border transition-all"
+                      [class.border-rose-200]="isWishlisted(product.id)" [class.bg-rose-50]="isWishlisted(product.id)" [class.text-rose-500]="isWishlisted(product.id)"
+                      [class.border-outline]="!isWishlisted(product.id)" [class.text-on-surface-variant]="!isWishlisted(product.id)"
+                      [class.hover:border-rose-300]="!isWishlisted(product.id)" [class.hover:text-rose-400]="!isWishlisted(product.id)">
+                      <span class="material-symbols-outlined text-[20px]" [style.font-variation-settings]="isWishlisted(product.id) ? '\'FILL\' 1' : '\'FILL\' 0'">favorite</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            }
+
+            <!-- List Skeletons -->
+            @if (isLoading) {
+              @for (i of [1,2,3]; track i) {
+                <div class="flex flex-col sm:flex-row gap-0 border border-outline rounded-3xl overflow-hidden h-auto sm:h-56">
+                  <div class="w-full sm:w-48 mh-skeleton h-48 sm:h-full"></div>
+                  <div class="flex-1 p-6 flex flex-col justify-between">
+                    <div class="space-y-3">
+                      <div class="h-6 mh-skeleton rounded w-1/2"></div>
+                      <div class="h-4 mh-skeleton rounded w-1/4"></div>
+                      <div class="h-10 mh-skeleton rounded w-full mt-4"></div>
+                    </div>
+                    <div class="h-11 mh-skeleton rounded w-32 mt-6"></div>
+                  </div>
+                </div>
+              }
+            }
+          </div>
+        }
+
+        <!-- Empty State -->
+        @if (products.length === 0 && !isLoading && !hasError) {
+          <div class="py-20 flex flex-col items-center justify-center text-center bg-surface-container-low border border-outline rounded-3xl mt-4 shadow-sm animate-fade-in">
+            <div class="w-20 h-20 bg-surface-container rounded-full flex items-center justify-center mb-6 border border-outline">
+              <span class="material-symbols-outlined text-4xl text-on-surface-variant opacity-60">inventory_2</span>
+            </div>
+            <h3 class="text-2xl font-extrabold text-on-surface mb-2">No items found</h3>
+            <p class="text-sm font-medium text-on-surface-variant mb-8 max-w-sm">
+              We couldn't find anything matching your filters. Try adjusting your search or clearing the filters to see more.
+            </p>
+            <button (click)="clearAllFilters()" class="mh-btn mh-btn-brand">
+              Clear All Filters
+            </button>
+          </div>
+        }
+
+        <!-- Pagination -->
+        @if (totalPages > 1 && !hasError && !isLoading) {
+          <div class="mt-16 flex flex-col sm:flex-row items-center justify-between gap-6 border-t border-outline pt-8">
+            
+            <!-- Page Size Selector -->
+            <div class="flex items-center gap-3 text-xs font-bold text-on-surface-variant uppercase tracking-widest">
+              <span>Show</span>
+              <div class="relative bg-surface-container rounded-lg border border-outline px-2 py-1 flex items-center">
+                <select [ngModel]="pageSize" (ngModelChange)="onPageSizeChange($event)"
+                  class="bg-transparent border-none pr-6 text-sm font-bold text-on-surface focus:ring-0 cursor-pointer outline-none appearance-none">
+                  @for (size of pageSizeOptions; track size) {
+                    <option [ngValue]="size">{{ size }}</option>
+                  }
+                </select>
+                <span class="material-symbols-outlined absolute right-1 pointer-events-none text-[16px]">expand_more</span>
+              </div>
+            </div>
+
+            <!-- Page Numbers -->
+            <nav class="flex items-center gap-2">
+              <button (click)="goToPage(page - 1)" [disabled]="page === 1"
+                class="w-10 h-10 flex items-center justify-center rounded-full border border-outline text-on-surface-variant transition-all disabled:opacity-30 disabled:cursor-not-allowed hover:bg-surface-hover hover:text-on-surface hover:border-outline-variant">
+                <span class="material-symbols-outlined text-[20px]">chevron_left</span>
+              </button>
+
+              @for (p of getVisiblePages(); track $index) {
+                @if (p === -1) {
+                  <span class="w-10 h-10 flex items-center justify-center text-on-surface-variant font-bold">...</span>
+                } @else {
+                  <button (click)="goToPage(p)" 
+                    [class.bg-primary]="p === page" [class.text-white]="p === page" [class.border-primary]="p === page" [class.shadow-md]="p === page"
+                    [class.bg-transparent]="p !== page" [class.text-on-surface-variant]="p !== page" [class.border-outline]="p !== page"
+                    class="w-10 h-10 flex items-center justify-center rounded-full border text-sm font-extrabold transition-all hover:border-primary hover:text-primary">
+                    {{ p }}
+                  </button>
+                }
+              }
+
+              <button (click)="goToPage(page + 1)" [disabled]="page === totalPages"
+                class="w-10 h-10 flex items-center justify-center rounded-full border border-outline text-on-surface-variant transition-all disabled:opacity-30 disabled:cursor-not-allowed hover:bg-surface-hover hover:text-on-surface hover:border-outline-variant">
+                <span class="material-symbols-outlined text-[20px]">chevron_right</span>
+              </button>
+            </nav>
+          </div>
+        }
+
+      } <!-- End of @else (Products View) -->
 
     </div>
-    }
   </div>
 </div>

@@ -1,36 +1,60 @@
-<main class="max-w-7xl mx-auto px-6 py-12 min-h-[60vh]">
+<main class="max-w-[1400px] mx-auto px-4 md:px-8 py-10 lg:py-16 animate-fade-in min-h-[70vh]">
 
-    <div class="flex justify-between items-end mb-10">
-        <div class="space-y-2">
-            <h1 class="text-3xl font-bold text-on-surface">My Wishlist</h1>
-            <p class="text-on-surface-variant">Manage your saved items and add them to cart</p>
+    <!-- Header Section -->
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-10 border-b border-outline pb-6">
+        <div>
+            <h1 class="text-3xl md:text-4xl font-extrabold text-on-surface tracking-tight mb-2">
+                My Wishlist
+            </h1>
+            <p class="text-xs font-extrabold text-on-surface-variant uppercase tracking-widest">
+                {{ wishlistItems().length }} {{ wishlistItems().length === 1 ? 'Saved Item' : 'Saved Items' }}
+            </p>
         </div>
-        <a routerLink="/catalog" class="text-primary font-label-md hover:underline flex items-center gap-1">
-            Continue Shopping <span class="material-symbols-outlined text-sm">arrow_forward</span>
-        </a>
+        
+        <div class="flex items-center gap-4">
+            @if (wishlistItems().length > 0) {
+                <button (click)="clearWishlist()" [disabled]="clearing()" class="text-xs font-extrabold text-error hover:text-error-text uppercase tracking-widest transition-colors flex items-center gap-1.5 px-4 py-2 rounded-xl hover:bg-error-bg disabled:opacity-50">
+                    @if(clearing()) {
+                        <span class="w-4 h-4 border-2 border-error/30 border-t-error rounded-full animate-spin"></span> Clearing...
+                    } @else {
+                        <span class="material-symbols-outlined text-[18px]">delete_sweep</span> Clear All
+                    }
+                </button>
+            }
+            <a routerLink="/catalog" class="mh-btn mh-btn-outline bg-surface px-6 hidden sm:flex">
+                <span class="material-symbols-outlined text-[20px]">explore</span>
+                Continue Shopping
+            </a>
+        </div>
     </div>
 
+    <!-- Content Area -->
     @if (wishlistItems().length > 0) {
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        @for (item of wishlistItems(); track item.id) {
-        <app-product-card [product]="item.product"></app-product-card>
-        }
-    </div>
-    } @else {
-    <div
-        class="flex flex-col items-center justify-center py-24 text-center bg-surface-container-low rounded-3xl border border-dashed border-outline">
-        <div class="w-48 h-48 bg-surface-container rounded-full flex items-center justify-center mb-6">
-            <span class="material-symbols-outlined text-6xl text-primary opacity-50">favorite</span>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-fade-in-up">
+            @for (item of wishlistItems(); track item.id) {
+                <!-- Fixed Data Binding: passed product_details instead of product ID -->
+                <div class="relative group">
+                    <app-product-card [product]="item.product_details"></app-product-card>
+                </div>
+            }
         </div>
-        <h2 class="text-2xl font-bold text-on-surface mb-2">Your wishlist is empty</h2>
-        <p class="text-on-surface-variant mb-8 max-w-md">
-            Explore our collection and save your favorite items to see them here later.
-        </p>
-        <a routerLink="/catalog"
-            class="bg-primary text-on-primary px-8 py-3 rounded-lg font-label-md hover:opacity-90 shadow-lg">
-            Start Shopping
-        </a>
-    </div>
+    } @else {
+        <!-- Premium Empty State -->
+        <div class="flex flex-col items-center justify-center py-20 md:py-32 animate-fade-in-up bg-surface-container-low border border-dashed border-outline-variant rounded-[3rem]">
+            <div class="w-24 h-24 rounded-full bg-rose-50 dark:bg-rose-500/10 text-rose-500 flex items-center justify-center mb-6 border border-rose-100 dark:border-rose-500/20 shadow-sm transition-transform hover:scale-110 duration-500">
+                <span class="material-symbols-outlined text-5xl" [style.font-variation-settings]="'\'FILL\' 1'">favorite</span>
+            </div>
+            
+            <h2 class="text-3xl font-extrabold mb-3 text-on-surface tracking-tight text-center">Your wishlist is empty</h2>
+            <p class="text-sm font-medium mb-10 text-on-surface-variant max-w-md text-center leading-relaxed">
+                You haven't saved any items yet. Explore our curated collections and tap the heart icon to save your favorites here.
+            </p>
+            
+            <a routerLink="/catalog" class="mh-btn mh-btn-brand px-8 py-4 shadow-lg shadow-primary/20">
+                <span class="material-symbols-outlined text-[20px]">explore</span>
+                Discover Products
+            </a>
+        </div>
     }
 
 </main>

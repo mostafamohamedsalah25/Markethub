@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProductService } from '../../../core/services/product.service';
 import { CategoryService } from '../../../core/services/category.service';
+import { UiService } from '../../../core/services/ui.service';
 import { Product } from '../../../core/models/product.model';
 import { Category } from '../../../core/models/category.model';
 
@@ -13,10 +14,12 @@ import { Category } from '../../../core/models/category.model';
   templateUrl: './seller-products.html',
 })
 export class SellerProductsComponent implements OnInit {
+  private cdr = inject(ChangeDetectorRef);
   products: Product[] = [];
   categories: Category[] = [];
   loading = false;
   errorMessage = '';
+  isFormOpen = false; // يتحكم في ظهور فورم إضافة المنتج
 
   newProduct = {
     name: '',
@@ -33,6 +36,7 @@ export class SellerProductsComponent implements OnInit {
   constructor(
     private productService: ProductService,
     private categoryService: CategoryService,
+    private ui: UiService // استبدال الـ alerts بـ UiService
   ) {}
 
   ngOnInit(): void {
@@ -40,16 +44,25 @@ export class SellerProductsComponent implements OnInit {
     this.loadCategories();
   }
 
+  toggleForm(): void {
+    this.isFormOpen = !this.isFormOpen;
+  }
+
   loadProducts(): void {
     this.loading = true;
+    this.cdr.markForCheck();
+
     this.productService.getSellerProducts().subscribe({
       next: (res: Product[] | { results: Product[] }) => {
         this.products = Array.isArray(res) ? res : res.results || [];
         this.loading = false;
+        this.cdr.markForCheck();
       },
       error: (err: { error?: { detail?: string } }) => {
         this.loading = false;
         this.errorMessage = err.error?.detail || 'Failed to load products';
+        this.ui.showInfo(this.errorMessage);
+        this.cdr.markForCheck();
       },
     });
   }
@@ -71,7 +84,7 @@ export class SellerProductsComponent implements OnInit {
 
   addProduct(): void {
     if (!this.newProduct.category) {
-      alert('Please select a category');
+      this.ui.showInfo('Please select a category first.');
       return;
     }
 
@@ -92,9 +105,10 @@ export class SellerProductsComponent implements OnInit {
 
     this.loading = true;
     this.errorMessage = '';
+    
     this.productService.createProduct(formData).subscribe({
       next: () => {
-        alert('Product added successfully!');
+        this.ui.showInfo('Product added successfully!');
         this.loadProducts();
         this.newProduct = {
           name: '',
@@ -106,6 +120,8 @@ export class SellerProductsComponent implements OnInit {
           category: '',
         };
         this.selectedFiles = [];
+        this.isFormOpen = false; // قفل الفورم بعد النجاح
+        this.cdr.markForCheck();
       },
       error: (err: { error?: Record<string, string[] | string> }) => {
         this.loading = false;
@@ -114,8 +130,9 @@ export class SellerProductsComponent implements OnInit {
           (Array.isArray(e?.['slug']) ? e['slug'][0] : e?.['slug']) ||
           (Array.isArray(e?.['category']) ? e['category'][0] : e?.['category']) ||
           (typeof e?.['detail'] === 'string' ? e['detail'] : '') ||
-          JSON.stringify(e);
-        alert('Error adding product: ' + msg);
+          'Something went wrong.';
+        this.ui.showInfo('Error: ' + msg);
+        this.cdr.markForCheck();
       },
     });
   }
@@ -128,10 +145,17 @@ export class SellerProductsComponent implements OnInit {
   }
 
   deleteProduct(slug: string): void {
-    if (confirm('Are you sure you want to deactivate this product?')) {
+    if (confirm('Are you sure you want to deactivate this product? This action cannot be fully undone.')) {
       this.productService.deleteProduct(slug).subscribe({
-        next: () => this.loadProducts(),
-        error: () => alert('Error deactivating product'),
+        next: () => {
+          this.ui.showInfo('Product deactivated successfully.');
+          this.loadProducts();
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.ui.showInfo('Error deactivating product.');
+          this.cdr.markForCheck();
+        },
       });
     }
   }

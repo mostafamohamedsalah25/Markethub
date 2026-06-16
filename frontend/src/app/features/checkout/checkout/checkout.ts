@@ -11,7 +11,6 @@ import { UiService } from '../../../core/services/ui.service';
   standalone: true,
   imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './checkout.html',
-  styleUrl: './checkout.scss',
 })
 export class CheckoutComponent implements OnInit {
   private ordersService = inject(OrdersService);
@@ -22,6 +21,10 @@ export class CheckoutComponent implements OnInit {
 
   cart: Cart | null = null;
   shippingAddress = '';
+  streetAddress = '';
+  city = '';
+  postalCode = '';
+  country = 'Egypt';
   contactPhone = '';
   loading = true;
   processing = false;
@@ -51,13 +54,18 @@ export class CheckoutComponent implements OnInit {
   }
 
   placeOrder(): void {
-    if (!this.shippingAddress.trim() || !this.contactPhone.trim()) {
-      this.uiService.showInfo('Please fill in shipping address and phone.');
+    const addressParts = [this.streetAddress, this.city, this.postalCode, this.country].filter(Boolean);
+    const combinedAddress = addressParts.join(', ');
+
+    if (!combinedAddress.trim() || !this.contactPhone.trim()) {
+      this.uiService.showInfo('Please fill in your shipping address and phone number.');
       return;
     }
+    this.shippingAddress = combinedAddress;
 
     this.processing = true;
     this.cdr.markForCheck();
+    
     this.ordersService.checkout(this.shippingAddress.trim(), this.contactPhone.trim()).subscribe({
       next: (orders) => {
         this.processing = false;
@@ -86,6 +94,7 @@ export class CheckoutComponent implements OnInit {
   private startPayment(order: Order): void {
     this.processing = true;
     this.cdr.markForCheck();
+    
     this.paymentService.createIntent(order.id).subscribe({
       next: (payment) => {
         this.processing = false;
@@ -101,7 +110,7 @@ export class CheckoutComponent implements OnInit {
       error: (err) => {
         this.processing = false;
         this.cdr.markForCheck();
-        const msg = err.error?.message || 'Could not start payment. Pay from My Orders.';
+        const msg = err.error?.message || 'Could not start payment. Please try paying from My Orders.';
         this.uiService.showInfo(msg);
         this.router.navigate(['/my-orders']);
       },

@@ -1,97 +1,110 @@
-<div class="max-w-7xl mx-auto px-4 py-6">
-  <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
+<div class="max-w-[1600px] mx-auto px-6 py-8 animate-fade-in">
+  
+  <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
     <div>
-      <h1 class="text-2xl font-bold text-slate-900">
-        {{ isAdmin() ? 'Orders' : 'Store orders' }}
+      <h1 class="text-3xl font-extrabold text-on-surface tracking-tight">
+        {{ isAdmin() ? 'All Orders' : 'Store Orders' }}
       </h1>
-      <p class="text-slate-600 text-sm mt-1">
-        {{ isAdmin() ? 'All marketplace orders and fulfillment' : 'Customer orders for your store' }}
+      <p class="text-sm font-medium text-on-surface-variant mt-1 uppercase tracking-widest">
+        {{ isAdmin() ? 'Manage marketplace fulfillment' : 'Manage your customers\' orders' }}
       </p>
     </div>
-    <button
-      type="button"
-      class="inline-flex items-center gap-2 text-sm text-indigo-600 font-medium hover:underline"
-      (click)="load()"
-      [disabled]="loading()"
-    >
-      <mat-icon class="!text-lg">refresh</mat-icon>
-      Refresh
+    <button class="mh-btn mh-btn-outline bg-surface px-6" (click)="load()" [disabled]="loading()">
+      <span class="material-symbols-outlined text-[18px]" [class.animate-spin]="loading()">refresh</span>
+      {{ loading() ? 'Refreshing...' : 'Refresh Data' }}
     </button>
   </div>
 
   @if (loading()) {
-    <div class="flex justify-center py-20">
-      <mat-spinner diameter="40"></mat-spinner>
+    <div class="flex flex-col gap-3">
+      @for (i of [1,2,3,4,5]; track i) { <div class="h-16 mh-skeleton rounded-2xl"></div> }
     </div>
-  } @else if (orders().length === 0) {
-    <div class="rounded-xl border border-dashed border-slate-200 bg-white p-12 text-center text-slate-600">
-      <mat-icon class="!text-5xl !w-auto !h-auto text-slate-300 mb-2">receipt_long</mat-icon>
-      <p>No orders to show yet.</p>
+  } 
+  @else if (orders().length === 0) {
+    <div class="py-20 flex flex-col items-center justify-center text-center bg-surface-container-low border border-dashed border-outline-variant rounded-[2rem]">
+      <div class="w-16 h-16 bg-surface-container rounded-full flex items-center justify-center mb-4">
+        <span class="material-symbols-outlined text-3xl text-on-surface-variant opacity-50">receipt_long</span>
+      </div>
+      <h3 class="text-xl font-bold text-on-surface mb-1">No orders to show</h3>
+      <p class="text-sm font-medium text-on-surface-variant">There are no orders available for your store yet.</p>
     </div>
-  } @else {
-    <div class="rounded-xl border border-slate-200 bg-white overflow-x-auto shadow-sm">
-      <table mat-table [dataSource]="orders()" class="w-full seller-orders-table">
-        <ng-container matColumnDef="id">
-          <th mat-header-cell *matHeaderCellDef>ID</th>
-          <td mat-cell *matCellDef="let o">#{{ o.id }}</td>
-        </ng-container>
+  } 
+  @else {
+    <div class="bg-surface border border-outline rounded-3xl overflow-hidden shadow-sm">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          
+          <thead>
+            <tr class="bg-surface-container-low text-[11px] font-extrabold uppercase tracking-widest text-on-surface-variant border-b border-outline">
+              <th class="px-6 py-4 font-extrabold">ID</th>
+              @if (isAdmin()) { <th class="px-6 py-4 font-extrabold">Seller</th> }
+              <th class="px-6 py-4 font-extrabold">Customer</th>
+              <th class="px-6 py-4 font-extrabold">Items Summary</th>
+              <th class="px-6 py-4 font-extrabold">Total</th>
+              <th class="px-6 py-4 font-extrabold">Payment</th>
+              <th class="px-6 py-4 font-extrabold">Date</th>
+              <th class="px-6 py-4 font-extrabold">Order Status</th>
+            </tr>
+          </thead>
 
-        <ng-container matColumnDef="seller">
-          <th mat-header-cell *matHeaderCellDef>Seller</th>
-          <td mat-cell *matCellDef="let o">{{ o.seller_name }}</td>
-        </ng-container>
-
-        <ng-container matColumnDef="customer">
-          <th mat-header-cell *matHeaderCellDef>Customer</th>
-          <td mat-cell *matCellDef="let o">
-            <div class="font-medium text-slate-900">{{ o.buyer_email }}</div>
-            <div class="text-xs text-slate-500">{{ o.contact_phone }}</div>
-            <div class="text-xs text-slate-500 max-w-xs truncate">{{ o.shipping_address }}</div>
-          </td>
-        </ng-container>
-
-        <ng-container matColumnDef="items">
-          <th mat-header-cell *matHeaderCellDef>Items</th>
-          <td mat-cell *matCellDef="let o" class="max-w-[220px] text-sm text-slate-600">
-            {{ itemsSummary(o) }}
-          </td>
-        </ng-container>
-
-        <ng-container matColumnDef="total">
-          <th mat-header-cell *matHeaderCellDef>Total</th>
-          <td mat-cell *matCellDef="let o" class="font-semibold">${{ o.total_amount }}</td>
-        </ng-container>
-
-        <ng-container matColumnDef="payment">
-          <th mat-header-cell *matHeaderCellDef>Payment</th>
-          <td mat-cell *matCellDef="let o">
-            <span [class]="paymentClass(o.id)">{{ paymentLabel(o.id) }}</span>
-          </td>
-        </ng-container>
-
-        <ng-container matColumnDef="date">
-          <th mat-header-cell *matHeaderCellDef>Date</th>
-          <td mat-cell *matCellDef="let o">{{ o.created_at | date : 'short' }}</td>
-        </ng-container>
-
-        <ng-container matColumnDef="status">
-          <th mat-header-cell *matHeaderCellDef>Status</th>
-          <td mat-cell *matCellDef="let o">
-            <mat-select
-              class="status-select min-w-[140px]"
-              [value]="o.status"
-              (selectionChange)="updateStatus(o, $event.value)"
-            >
-              @for (st of statusOptions; track st) {
-                <mat-option [value]="st">{{ st }}</mat-option>
-              }
-            </mat-select>
-          </td>
-        </ng-container>
-
-        <tr mat-header-row *matHeaderRowDef="displayedColumns()"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns()"></tr>
-      </table>
+          <tbody class="divide-y divide-outline">
+            @for (o of orders(); track o.id) {
+              <tr class="hover:bg-surface-hover transition-colors group">
+                <td class="px-6 py-4 text-sm font-extrabold text-primary tracking-wide">#{{ o.id }}</td>
+                
+                @if (isAdmin()) { 
+                  <td class="px-6 py-4 text-sm font-bold text-on-surface max-w-[150px] truncate">
+                    {{ o.seller_name }}
+                  </td> 
+                }
+                
+                <td class="px-6 py-4 min-w-[200px]">
+                  <div class="text-sm font-extrabold text-on-surface mb-0.5 truncate max-w-[200px]">{{ o.buyer_email }}</div>
+                  <div class="text-[11px] font-bold text-on-surface-variant uppercase tracking-widest flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[12px]">call</span> {{ o.contact_phone || 'N/A' }}
+                  </div>
+                  <div class="text-xs font-medium text-on-surface-variant mt-1 line-clamp-1 max-w-[220px]">
+                    {{ o.shipping_address }}
+                  </div>
+                </td>
+                
+                <td class="px-6 py-4 text-xs font-medium text-on-surface-variant line-clamp-2 max-w-[240px] leading-relaxed mt-2">
+                  {{ itemsSummary(o) }}
+                </td>
+                
+                <td class="px-6 py-4 text-sm font-extrabold text-on-surface whitespace-nowrap">
+                  ${{ o.total_amount }}
+                </td>
+                
+                <td class="px-6 py-4 text-xs tracking-widest uppercase">
+                  <span [class]="paymentClass(o.id)">{{ paymentLabel(o.id) }}</span>
+                </td>
+                
+                <td class="px-6 py-4 text-sm font-medium text-on-surface-variant whitespace-nowrap">
+                  {{ o.created_at | date : 'mediumDate' }}
+                </td>
+                
+                <td class="px-6 py-4">
+                  <div class="relative inline-block w-full min-w-[130px]">
+                    <select [ngModel]="o.status" (change)="updateStatus(o, $any($event.target).value)"
+                            class="w-full appearance-none pl-4 pr-8 py-2 rounded-xl text-[11px] font-extrabold uppercase tracking-widest border outline-none cursor-pointer transition-all shadow-sm"
+                            [ngClass]="orderStatusClass(o.status)">
+                      @for (st of statusOptions; track st) {
+                        <option [value]="st" class="font-bold text-on-surface bg-surface">{{ st }}</option>
+                      }
+                    </select>
+                    <span class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-[16px] opacity-70">expand_more</span>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      
+      <div class="px-6 py-4 border-t border-outline bg-surface-container-lowest text-xs font-bold text-on-surface-variant uppercase tracking-widest text-right">
+        Total Orders: {{ orders().length }}
+      </div>
     </div>
   }
 </div>

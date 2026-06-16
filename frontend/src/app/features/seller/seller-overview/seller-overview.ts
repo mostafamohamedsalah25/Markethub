@@ -1,11 +1,7 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { catchError, forkJoin, of } from 'rxjs';
-import { MatCardModule } from '@angular/material/card';
-import { MatIconModule } from '@angular/material/icon';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatButtonModule } from '@angular/material/button';
 
 import { ProductService } from '../../../core/services/product.service';
 import { SellerProfileService } from '../../../core/services/seller-profile.service';
@@ -14,11 +10,10 @@ import { AuthService } from '../../../core/services/auth';
 @Component({
   selector: 'app-seller-overview',
   standalone: true,
-  imports: [CommonModule, RouterLink, MatCardModule, MatIconModule, MatProgressSpinnerModule, MatButtonModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './seller-overview.html',
-  styleUrl: './seller-overview.scss',
 })
-export class SellerOverviewComponent implements OnInit {
+export class SellerOverviewComponent {
   private sellerProfileService = inject(SellerProfileService);
   private authService = inject(AuthService);
 
@@ -29,24 +24,34 @@ export class SellerOverviewComponent implements OnInit {
   readonly salesCount = signal(0);
   readonly averageRating = signal(0);
 
-  ngOnInit(): void {
-    this.load();
+  constructor() {
+    // السحر هنا: effect بيراقب أي تغيير في بيانات اليوزر ويشتغل لوحده
+    effect(() => {
+      const user = this.authService.currentUser();
+      
+      if (user) {
+        if (user.seller_profile?.id) {
+          // أول ما يلاقي الـ ID بيحمل البيانات تلقائياً
+          this.load(user.seller_profile.id);
+        } else {
+          // لو اليوزر موجود بس مش بائع
+          this.error.set('Seller profile not found. Please contact support.');
+          this.loading.set(false);
+        }
+      }
+    }, { allowSignalWrites: true }); // ضرورية عشان نقدر نعدل في الـ loading signal جوه الـ effect
   }
 
-  load(): void {
-    const user = this.authService.currentUser();
-    const profileId = user?.seller_profile?.id;
-
-    if (!profileId) {
-      this.error.set('Seller profile not found.');
-      this.loading.set(false);
-      return;
-    }
+  // مسحنا الـ ngOnInit وعدلنا الـ load عشان تستقبل الـ ID مباشرة
+  load(profileId?: string | number): void {
+    const idToLoad = profileId || this.authService.currentUser()?.seller_profile?.id;
+    
+    if (!idToLoad) return;
 
     this.loading.set(true);
     this.error.set(null);
 
-    this.sellerProfileService.getProfile(profileId).subscribe({
+    this.sellerProfileService.getProfile(idToLoad).subscribe({
       next: (res: any) => {
         const stats = res.data || res;
         this.productCount.set(stats.total_products);
@@ -56,7 +61,7 @@ export class SellerOverviewComponent implements OnInit {
         this.loading.set(false);
       },
       error: () => {
-        this.error.set('Could not load seller dashboard.');
+        this.error.set('Could not load seller dashboard metrics.');
         this.loading.set(false);
       },
     });

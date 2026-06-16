@@ -1,14 +1,7 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatTableModule } from '@angular/material/table';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatChipsModule } from '@angular/material/chips';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { FormsModule } from '@angular/forms';
 
 import { PromoCode } from '../../../core/models/promo.model';
 import { PromoService } from '../../../core/services/promo.service';
@@ -21,16 +14,7 @@ import {
 @Component({
   selector: 'app-admin-promos',
   standalone: true,
-  imports: [
-    CommonModule,
-    MatTableModule,
-    MatButtonModule,
-    MatIconModule,
-    MatProgressSpinnerModule,
-    MatTooltipModule,
-    MatPaginatorModule,
-    MatSlideToggleModule,
-  ],
+  imports: [CommonModule, MatDialogModule, FormsModule],
   templateUrl: './admin-promos.html',
   styleUrl: './admin-promos.scss',
 })
@@ -39,20 +23,19 @@ export class AdminPromosComponent implements OnInit {
   private dialog = inject(MatDialog);
   private ui = inject(UiService);
 
-  readonly displayedColumns: string[] = [
-    'code',
-    'type',
-    'value',
-    'active',
-    'usage',
-    'min',
-    'actions',
-  ];
-
   readonly loading = signal(true);
   readonly promos = signal<PromoCode[]>([]);
   readonly pageIndex = signal(0);
   readonly pageSize = signal(10);
+  readonly pageSizeOptions = [5, 10, 25];
+
+  readonly pagedPromos = computed(() => {
+    const start = this.pageIndex() * this.pageSize();
+    return this.promos().slice(start, start + this.pageSize());
+  });
+  
+  readonly totalPages = computed(() => Math.ceil(this.promos().length / this.pageSize()));
+  readonly Math = Math; // To use Math.min in template
 
   ngOnInit(): void {
     this.load();
@@ -72,14 +55,13 @@ export class AdminPromosComponent implements OnInit {
     });
   }
 
-  pagedPromos(): PromoCode[] {
-    const start = this.pageIndex() * this.pageSize();
-    return this.promos().slice(start, start + this.pageSize());
+  goToPage(index: number): void {
+    if (index >= 0 && index < this.totalPages()) this.pageIndex.set(index);
   }
 
-  onPage(e: PageEvent): void {
-    this.pageIndex.set(e.pageIndex);
-    this.pageSize.set(e.pageSize);
+  changePageSize(size: number): void {
+    this.pageSize.set(size);
+    this.pageIndex.set(0);
   }
 
   openCreate(): void {
@@ -91,11 +73,12 @@ export class AdminPromosComponent implements OnInit {
   }
 
   private openForm(data: AdminPromoFormDialogData): void {
-    this.dialog
-      .open(AdminPromoFormDialogComponent, {
+    // Customizing the dialog wrapper via panelClass to make it blend with Tailwind
+    this.dialog.open(AdminPromoFormDialogComponent, {
         width: '520px',
         data,
         disableClose: true,
+        panelClass: 'custom-tailwind-dialog'
       })
       .afterClosed()
       .subscribe((saved) => {
@@ -106,13 +89,17 @@ export class AdminPromosComponent implements OnInit {
       });
   }
 
-  toggleActive(promo: PromoCode, active: boolean): void {
+  toggleActive(promo: PromoCode, event: Event): void {
+    const active = (event.target as HTMLInputElement).checked;
     this.promoService.update(promo.id, { is_active: active }).subscribe({
       next: (updated) => {
         this.promos.update((list) => list.map((p) => (p.id === updated.id ? updated : p)));
         this.ui.showInfo(active ? 'Promo activated.' : 'Promo deactivated.');
       },
-      error: () => this.ui.showInfo('Update failed.'),
+      error: () => {
+        (event.target as HTMLInputElement).checked = !active; // Revert UI on fail
+        this.ui.showInfo('Update failed.');
+      },
     });
   }
 

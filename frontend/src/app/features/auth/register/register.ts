@@ -10,13 +10,8 @@ import {
   ValidationErrors,
 } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { MatCardModule } from '@angular/material/card';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatSelectModule } from '@angular/material/select';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthService } from '../../../core/services/auth';
+import { UiService } from '../../../core/services/ui.service';
 
 @Component({
   selector: 'app-register',
@@ -24,12 +19,6 @@ import { AuthService } from '../../../core/services/auth';
     CommonModule,
     ReactiveFormsModule,
     RouterLink,
-    MatCardModule,
-    MatInputModule,
-    MatButtonModule,
-    MatIconModule,
-    MatSelectModule,
-    MatProgressSpinnerModule,
   ],
   templateUrl: './register.html',
   styleUrl: './register.scss',
@@ -116,5 +105,9 @@ export class RegisterComponent implements OnInit {
         this.errorMessage.set(errorMsg);
       },
     });
+  }
+
+  showComingSoon(feature: string): void {
+    inject(UiService).showComingSoon(feature);
   }
 }

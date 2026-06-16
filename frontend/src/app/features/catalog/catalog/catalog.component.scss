@@ -1,0 +1,44 @@
+/* ============================================================
+   CATALOG PAGE STYLES
+   ============================================================ */
+
+:host {
+    display: block;
+}
+
+// Remove default arrows from number inputs for a cleaner look
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type=number] {
+    -moz-appearance: textfield;
+}
+
+// Style the options inside select dropdowns to match theme
+select option {
+    background-color: var(--mh-surface);
+    color: var(--mh-text-primary);
+    font-weight: 600;
+}
+
+.custom-scrollbar {
+    &::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: var(--mh-border-strong);
+        border-radius: 4px;
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+        background: var(--mh-brand);
+    }
+}

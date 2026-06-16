@@ -1,20 +1,31 @@
-import { Component } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
-import { Router } from '@angular/router';
-import { MatIconModule } from '@angular/material/icon';
+import { RouterModule, Router } from '@angular/router';
+import { AuthService } from '../../../core/services/auth';
 
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, MatIconModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './admin-dashboard.html',
 })
 export class AdminDashboardComponent {
-  constructor(public router: Router) {}
+  router = inject(Router);
+  authService = inject(AuthService);
+
+  // إشارة للتحكم في السايد بار على الموبايل
+  isSidebarOpen = signal(false);
+
+  toggleSidebar(): void {
+    this.isSidebarOpen.update(v => !v);
+  }
 
   getLink(path: string): string {
     const base = this.router.url.startsWith('/admin') ? '/admin' : '/seller';
     return base + path;
+  }
+
+  logout(): void {
+    this.authService.logout();
   }
 }

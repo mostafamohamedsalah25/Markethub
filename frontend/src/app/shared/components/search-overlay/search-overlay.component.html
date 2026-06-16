@@ -1,40 +1,34 @@
-<div class="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-slate-200 z-50 overflow-hidden min-w-[320px]">
+<div class="absolute top-full left-0 right-0 mt-3 bg-surface rounded-[1.5rem] shadow-2xl border border-outline z-50 overflow-hidden min-w-[320px] animate-scale-in">
   
-  <!-- Loading State -->
   @if (isLoading) {
-    <div class="p-4 space-y-4">
+    <div class="p-6 space-y-4">
       @for (i of [1, 2, 3]; track i) {
-        <div class="flex items-center gap-3 animate-pulse">
-          <div class="w-10 h-10 bg-slate-100 rounded-lg"></div>
+        <div class="flex items-center gap-4 animate-pulse">
+          <div class="w-12 h-12 bg-surface-container rounded-xl"></div>
           <div class="flex-grow space-y-2">
-            <div class="h-3 bg-slate-100 rounded w-3/4"></div>
-            <div class="h-2 bg-slate-100 rounded w-1/4"></div>
+            <div class="h-3 bg-surface-container rounded w-3/4"></div>
+            <div class="h-2 bg-surface-container rounded w-1/4"></div>
           </div>
         </div>
       }
     </div>
   } @else {
     
-    <!-- Results List -->
     @if (results.length > 0) {
-      <div class="max-h-[400px] overflow-y-auto">
+      <div class="max-h-[400px] overflow-y-auto custom-scrollbar">
         @for (product of results; track product.id; let i = $index) {
           <button 
             #resultItem
             (click)="onSelect(product)"
-            class="w-full flex items-center gap-4 px-4 py-3 hover:bg-slate-50 transition-colors text-left outline-none focus:bg-slate-100"
+            class="w-full flex items-center gap-4 px-6 py-4 hover:bg-surface-hover transition-colors text-left outline-none focus:bg-surface-container"
             tabindex="0"
           >
-            <div class="w-10 h-10 flex-shrink-0 bg-slate-100 rounded-lg overflow-hidden border border-slate-200">
-              <img 
-                [src]="product.images | primaryImage" 
-                (error)="onImageError($event)"
-                class="w-full h-full object-cover"
-              >
+            <div class="w-12 h-12 flex-shrink-0 bg-surface-container rounded-xl overflow-hidden border border-outline">
+              <img [src]="product.images | primaryImage" (error)="onImageError($event)" class="w-full h-full object-cover">
             </div>
             <div class="flex-grow min-w-0">
-              <h4 class="text-sm font-medium text-slate-900 truncate" [innerHTML]="product.name | highlight: query"></h4>
-              <p class="text-xs font-semibold text-indigo-600 mt-0.5">
+              <h4 class="text-sm font-extrabold text-on-surface truncate" [innerHTML]="product.name | highlight: query"></h4>
+              <p class="text-[11px] font-bold text-primary mt-1">
                 {{ (product.discount_price || product.price) | currency }}
               </p>
             </div>
@@ -42,25 +36,22 @@
         }
       </div>
 
-      <!-- Footer: View All -->
       <button 
         #resultItem
         (click)="onViewAll()"
-        class="w-full p-4 border-t border-slate-100 text-center text-sm font-semibold text-indigo-600 hover:bg-slate-50 transition-colors outline-none focus:bg-slate-100"
+        class="w-full p-4 border-t border-outline text-center text-xs font-extrabold uppercase tracking-widest text-primary hover:bg-primary-container transition-colors outline-none focus:bg-surface-hover"
         tabindex="0"
       >
         View all results for "{{ query }}"
       </button>
 
     } @else if (query.length >= 2) {
-      <!-- Empty State -->
-      <div class="p-8 text-center">
-        <div class="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3">
-          <span class="material-symbols-outlined text-slate-400">search_off</span>
+      <div class="p-10 text-center">
+        <div class="w-14 h-14 bg-surface-container rounded-full flex items-center justify-center mx-auto mb-4 border border-outline">
+          <span class="material-symbols-outlined text-on-surface-variant opacity-60 text-2xl">search_off</span>
         </div>
-        <p class="text-sm text-slate-500">No results found for "<span class="font-medium text-slate-900">{{ query }}</span>"</p>
+        <p class="text-sm font-medium text-on-surface-variant">No results found for "<span class="font-extrabold text-on-surface">{{ query }}</span>"</p>
       </div>
     }
   }
-
 </div>

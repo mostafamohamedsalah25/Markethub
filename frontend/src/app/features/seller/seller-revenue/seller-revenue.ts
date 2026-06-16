@@ -2,11 +2,6 @@ import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { catchError, forkJoin, of } from 'rxjs';
-import { MatCardModule } from '@angular/material/card';
-import { MatIconModule } from '@angular/material/icon';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatButtonModule } from '@angular/material/button';
-import { MatTableModule } from '@angular/material/table';
 
 import { PaymentRecord } from '../../../core/models/payment.model';
 import { OrdersService, Order } from '../../../core/services/orders.service';
@@ -20,17 +15,8 @@ interface MonthBucket {
 @Component({
   selector: 'app-seller-revenue',
   standalone: true,
-  imports: [
-    CommonModule,
-    RouterLink,
-    MatCardModule,
-    MatIconModule,
-    MatProgressSpinnerModule,
-    MatButtonModule,
-    MatTableModule,
-  ],
+  imports: [CommonModule, RouterLink],
   templateUrl: './seller-revenue.html',
-  styleUrl: './seller-revenue.scss',
 })
 export class SellerRevenueComponent implements OnInit {
   private ordersService = inject(OrdersService);
@@ -50,8 +36,6 @@ export class SellerRevenueComponent implements OnInit {
 
   readonly monthBuckets = computed(() => this.buildBuckets(this.payments(), this.orders()));
 
-  readonly displayedColumns = ['paid_at', 'order_id', 'buyer', 'amount'];
-
   ngOnInit(): void {
     this.load();
   }
@@ -70,7 +54,7 @@ export class SellerRevenueComponent implements OnInit {
         this.loading.set(false);
       },
       error: () => {
-        this.error.set('Could not load revenue data.');
+        this.error.set('Could not load revenue data. Please check your connection.');
         this.loading.set(false);
       },
     });

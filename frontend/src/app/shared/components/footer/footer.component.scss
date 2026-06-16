@@ -1,0 +1,10 @@
+// Footer Styles
+.footer-link {
+  color: var(--mh-footer-link);
+  font-family: 'Inter', sans-serif;
+  transition: color var(--mh-transition);
+
+  &:hover {
+    color: var(--mh-footer-link-hover);
+  }
+}

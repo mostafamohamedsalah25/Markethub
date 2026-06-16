@@ -1,0 +1,86 @@
+/* ============================================================
+   NAVBAR COMPONENT STYLES
+   ============================================================ */
+
+.navbar-scrolled {
+  background-color: rgba(var(--mh-surface), 0.85) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--mh-border);
+  box-shadow: var(--mh-shadow-sm);
+}
+
+.nav-link {
+  color: var(--mh-text-secondary);
+  transition: all var(--mh-transition);
+
+  &:hover {
+    background: var(--mh-surface-hover);
+    color: var(--mh-text-primary);
+  }
+}
+
+.nav-link-active,
+.mobile-nav-active {
+  color: var(--mh-brand) !important;
+  background: var(--mh-brand-faint);
+  font-weight: 700;
+}
+
+.nav-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--mh-radius-full);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--mh-text-secondary);
+  cursor: pointer;
+  transition: all var(--mh-transition);
+  flex-shrink: 0;
+
+  &:hover {
+    background: var(--mh-surface-hover);
+    color: var(--mh-text-primary);
+    border-color: var(--mh-border);
+  }
+}
+
+.dropdown-panel {
+  position: absolute;
+  top: calc(100% + 12px);
+  z-index: 100;
+  background: var(--mh-card);
+  border: 1px solid var(--mh-border-strong);
+  border-radius: var(--mh-radius-lg);
+  box-shadow: var(--mh-shadow-xl);
+  overflow: hidden;
+  transform-origin: top right;
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--mh-text-secondary);
+  transition: all var(--mh-transition);
+  text-decoration: none;
+  cursor: pointer;
+  border: none;
+  background: none;
+  width: 100%;
+
+  &:hover {
+    background: var(--mh-surface-hover);
+    color: var(--mh-text-primary);
+    padding-left: 20px;
+    /* Subtle premium hover animation */
+  }
+}

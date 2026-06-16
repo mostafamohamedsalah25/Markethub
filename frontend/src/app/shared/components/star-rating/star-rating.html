@@ -1,13 +1,13 @@
 <div class="flex items-center gap-1">
-  <div class="flex items-center text-amber-400">
+  <div class="flex items-center text-amber-400 gap-0.5">
     @for (star of stars; track $index) {
-      <span class="material-symbols-outlined !text-sm"
-        [style.font-variation-settings]="star === 'full' ? '\'FILL\' 1' : '\'FILL\' 0'">
+      <span class="material-symbols-outlined text-[16px]"
+            [style.font-variation-settings]="star !== 'empty' ? '\'FILL\' 1' : '\'FILL\' 0'">
         {{ star === 'half' ? 'star_half' : 'star' }}
       </span>
     }
   </div>
   @if (count > 0) {
-    <span class="text-on-surface-variant font-body-sm ml-1">({{ count }})</span>
+    <span class="text-on-surface-variant text-xs font-bold ml-1">({{ count }})</span>
   }
 </div>

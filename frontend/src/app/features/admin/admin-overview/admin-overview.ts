@@ -2,10 +2,6 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { catchError, forkJoin, of } from 'rxjs';
-import { MatCardModule } from '@angular/material/card';
-import { MatIconModule } from '@angular/material/icon';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatButtonModule } from '@angular/material/button';
 
 import { AdminApiService } from '../../../core/services/admin-api.service';
 import { OrdersService } from '../../../core/services/orders.service';
@@ -15,7 +11,7 @@ import { PromoService } from '../../../core/services/promo.service';
 @Component({
   selector: 'app-admin-overview',
   standalone: true,
-  imports: [CommonModule, RouterLink, MatCardModule, MatIconModule, MatProgressSpinnerModule, MatButtonModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './admin-overview.html',
   styleUrl: './admin-overview.scss',
 })
