@@ -28,6 +28,11 @@ export class SellerOrdersComponent implements OnInit {
   readonly paymentByOrder = signal<Map<number, PaymentRecord>>(new Map());
 
   readonly statusOptions = ['pending', 'accepted', 'rejected', 'shipped', 'delivered', 'cancelled'];
+  private readonly sellerTransitions: Record<string, string[]> = {
+    pending: ['accepted'],
+    accepted: ['shipped'],
+    shipped: ['delivered'],
+  };
 
   ngOnInit(): void {
     this.load();
@@ -105,8 +110,21 @@ export class SellerOrdersComponent implements OnInit {
     return order.items.map((i) => `${i.quantity}× ${i.product_name}`).join(', ');
   }
 
+  availableStatuses(order: Order): string[] {
+    if (this.isAdmin()) {
+      return this.statusOptions;
+    }
+    return [order.status, ...(this.sellerTransitions[order.status] ?? [])].filter(
+      (value, index, self) => self.indexOf(value) === index,
+    );
+  }
+
   updateStatus(order: Order, newStatus: string): void {
     if (newStatus === order.status) return;
+    if (!this.isAdmin() && !(this.sellerTransitions[order.status] ?? []).includes(newStatus)) {
+      this.ui.showInfo(`Sellers can only move ${order.status} orders to the next valid state.`);
+      return;
+    }
     this.ordersService.updateOrderStatus(order.id, newStatus).subscribe({
       next: (updated) => {
         this.orders.update((list) => list.map((o) => (o.id === updated.id ? updated : o)));

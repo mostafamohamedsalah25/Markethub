@@ -72,58 +72,296 @@
         </a>
       </div>
 
-      <div class="mb-10">
-        <h2 class="text-sm font-extrabold uppercase tracking-widest text-on-surface-variant border-b border-outline pb-3 mb-5">
-          Account Details
-        </h2>
-        
-        <div class="space-y-4">
-          <div class="flex items-center gap-5 p-5 rounded-2xl bg-surface-container-low border border-outline">
-            <div class="w-12 h-12 rounded-xl bg-surface flex items-center justify-center border border-outline shadow-sm text-on-surface-variant">
-              <span class="material-symbols-outlined text-[22px]">mail</span>
+      <!-- Tabs Switcher -->
+      <div class="flex border-b border-outline mb-8">
+        <button
+          type="button"
+          (click)="activeTab.set('info')"
+          [class.border-primary]="activeTab() === 'info'"
+          [class.text-primary]="activeTab() === 'info'"
+          [class.border-transparent]="activeTab() !== 'info'"
+          [class.text-on-surface-variant]="activeTab() !== 'info'"
+          class="flex-1 pb-4 text-center border-b-2 font-extrabold text-xs uppercase tracking-widest transition-all focus:outline-none"
+        >
+          Account Info
+        </button>
+        <button
+          type="button"
+          (click)="activeTab.set('addresses')"
+          [class.border-primary]="activeTab() === 'addresses'"
+          [class.text-primary]="activeTab() === 'addresses'"
+          [class.border-transparent]="activeTab() !== 'addresses'"
+          [class.text-on-surface-variant]="activeTab() !== 'addresses'"
+          class="flex-1 pb-4 text-center border-b-2 font-extrabold text-xs uppercase tracking-widest transition-all focus:outline-none"
+        >
+          Address Book
+        </button>
+      </div>
+
+      <!-- Tab Content: Account Info -->
+      @if (activeTab() === 'info') {
+        <div class="mb-10 animate-fade-in">
+          <h2 class="text-sm font-extrabold uppercase tracking-widest text-on-surface-variant border-b border-outline pb-3 mb-5">
+            Account Details
+          </h2>
+          
+          <div class="space-y-4">
+            <div class="flex items-center gap-5 p-5 rounded-2xl bg-surface-container-low border border-outline">
+              <div class="w-12 h-12 rounded-xl bg-surface flex items-center justify-center border border-outline shadow-sm text-on-surface-variant">
+                <span class="material-symbols-outlined text-[22px]">mail</span>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-[10px] font-extrabold uppercase tracking-widest text-on-surface-variant mb-0.5">Email Address</p>
+                <p class="text-sm font-bold text-on-surface truncate">{{ user()?.email }}</p>
+              </div>
             </div>
-            <div class="flex-1 min-w-0">
-              <p class="text-[10px] font-extrabold uppercase tracking-widest text-on-surface-variant mb-0.5">Email Address</p>
-              <p class="text-sm font-bold text-on-surface truncate">{{ user()?.email }}</p>
+
+            <div class="flex items-center gap-5 p-5 rounded-2xl bg-surface-container-low border border-outline">
+              <div class="w-12 h-12 rounded-xl bg-surface flex items-center justify-center border border-outline shadow-sm text-on-surface-variant">
+                <span class="material-symbols-outlined text-[22px]">call</span>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-[10px] font-extrabold uppercase tracking-widest text-on-surface-variant mb-0.5">Phone Number</p>
+                <p class="text-sm font-bold text-on-surface truncate">
+                  {{ user()?.phone || 'Not provided' }}
+                </p>
+              </div>
+              @if (!user()?.phone) {
+                <button onclick="alert('Profile editing coming soon!')" class="text-[10px] font-extrabold uppercase tracking-widest text-primary hover:underline">Add</button>
+              }
+            </div>
+
+            <div class="flex items-center gap-5 p-5 rounded-2xl bg-surface-container-low border border-outline">
+              <div class="w-12 h-12 rounded-xl bg-surface flex items-center justify-center border border-outline shadow-sm text-on-surface-variant">
+                <span class="material-symbols-outlined text-[22px]">badge</span>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-[10px] font-extrabold uppercase tracking-widest text-on-surface-variant mb-0.5">Account Role</p>
+                <p class="text-sm font-bold text-on-surface truncate capitalize">{{ user()?.role }}</p>
+              </div>
             </div>
           </div>
 
-          <div class="flex items-center gap-5 p-5 rounded-2xl bg-surface-container-low border border-outline">
-            <div class="w-12 h-12 rounded-xl bg-surface flex items-center justify-center border border-outline shadow-sm text-on-surface-variant">
-              <span class="material-symbols-outlined text-[22px]">call</span>
-            </div>
-            <div class="flex-1 min-w-0">
-              <p class="text-[10px] font-extrabold uppercase tracking-widest text-on-surface-variant mb-0.5">Phone Number</p>
-              <p class="text-sm font-bold text-on-surface truncate">
-                {{ user()?.phone || 'Not provided' }}
-              </p>
-            </div>
-            @if (!user()?.phone) {
-              <button onclick="alert('Profile editing coming soon!')" class="text-[10px] font-extrabold uppercase tracking-widest text-primary hover:underline">Add</button>
-            }
-          </div>
-
-          <div class="flex items-center gap-5 p-5 rounded-2xl bg-surface-container-low border border-outline">
-            <div class="w-12 h-12 rounded-xl bg-surface flex items-center justify-center border border-outline shadow-sm text-on-surface-variant">
-              <span class="material-symbols-outlined text-[22px]">badge</span>
-            </div>
-            <div class="flex-1 min-w-0">
-              <p class="text-[10px] font-extrabold uppercase tracking-widest text-on-surface-variant mb-0.5">Account Role</p>
-              <p class="text-sm font-bold text-on-surface truncate capitalize">{{ user()?.role }}</p>
-            </div>
+          <div class="flex flex-col sm:flex-row gap-4 border-t border-outline pt-8 mt-8">
+            <button onclick="alert('Profile editing coming soon!')" class="mh-btn mh-btn-brand flex-1 py-3.5 shadow-md shadow-primary/20 flex justify-center items-center gap-2">
+              <span class="material-symbols-outlined text-[18px]">edit</span> Edit Profile
+            </button>
+            <button (click)="authService.logout()" class="mh-btn mh-btn-outline flex-1 py-3.5 border-error/50 text-error hover:bg-error-bg hover:border-error flex justify-center items-center gap-2">
+              <span class="material-symbols-outlined text-[18px]">logout</span> Sign Out
+            </button>
           </div>
         </div>
-      </div>
+      }
 
-      <div class="flex flex-col sm:flex-row gap-4 border-t border-outline pt-8">
-        <button onclick="alert('Profile editing coming soon!')" class="mh-btn mh-btn-brand flex-1 py-3.5 shadow-md shadow-primary/20 flex justify-center items-center gap-2">
-          <span class="material-symbols-outlined text-[18px]">edit</span> Edit Profile
-        </button>
-        <button (click)="authService.logout()" class="mh-btn mh-btn-outline flex-1 py-3.5 border-error/50 text-error hover:bg-error-bg hover:border-error flex justify-center items-center gap-2">
-          <span class="material-symbols-outlined text-[18px]">logout</span> Sign Out
-        </button>
-      </div>
+      <!-- Tab Content: Address Book -->
+      @if (activeTab() === 'addresses') {
+        <div class="space-y-6 animate-fade-in">
+          <div class="flex justify-between items-center border-b border-outline pb-3">
+            <h2 class="text-sm font-extrabold uppercase tracking-widest text-on-surface-variant">
+              Saved Addresses
+            </h2>
+            <button
+              type="button"
+              (click)="openAddModal()"
+              class="flex items-center gap-1.5 px-4 py-2 bg-primary/10 hover:bg-primary/20 text-primary hover:text-primary-hover rounded-xl text-xs font-bold transition-all"
+            >
+              <span class="material-symbols-outlined text-[16px]">add</span> Add Address
+            </button>
+          </div>
+
+          @if (isLoadingAddresses()) {
+            <div class="flex flex-col items-center justify-center py-12">
+              <span class="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></span>
+              <p class="text-xs text-on-surface-variant font-extrabold uppercase tracking-widest mt-4">Loading Address Book...</p>
+            </div>
+          } @else if (addresses().length === 0) {
+            <div class="flex flex-col items-center justify-center py-16 text-center border border-dashed border-outline rounded-[2rem] bg-surface-container-low px-6">
+              <span class="material-symbols-outlined text-4xl text-on-surface-variant/40 mb-3">location_on</span>
+              <p class="text-sm font-bold text-on-surface mb-1">No addresses saved yet</p>
+              <p class="text-xs text-on-surface-variant mb-6 max-w-[280px]">Add shipping addresses to speed up your checkout process.</p>
+              <button
+                type="button"
+                (click)="openAddModal()"
+                class="mh-btn mh-btn-brand py-3 px-6 text-xs shadow-md shadow-primary/25"
+              >
+                Add Your First Address
+              </button>
+            </div>
+          } @else {
+            <div class="grid grid-cols-1 gap-4">
+              @for (address of addresses(); track address.id) {
+                <div
+                  [class.border-primary]="address.is_default"
+                  [class.shadow-md]="address.is_default"
+                  [class.shadow-primary\/5]="address.is_default"
+                  class="p-5 rounded-2xl bg-surface-container-low border border-outline flex flex-col md:flex-row justify-between md:items-start gap-4 transition-all"
+                >
+                  <div class="space-y-2">
+                    <div class="flex items-center gap-3">
+                      <span class="font-extrabold text-sm text-on-surface uppercase tracking-wide">
+                        {{ address.address_title }}
+                      </span>
+                      @if (address.is_default) {
+                        <span class="px-2.5 py-0.5 rounded bg-primary/10 text-primary text-[10px] font-extrabold uppercase tracking-widest border border-primary/20">
+                          Default
+                        </span>
+                      }
+                    </div>
+
+                    <div class="text-xs font-semibold text-on-surface-variant space-y-1">
+                      <p class="font-bold text-on-surface text-sm">{{ address.recipient_name }}</p>
+                      <p class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">call</span> {{ address.recipient_phone }}</p>
+                      <p class="flex items-start gap-1 mt-1">
+                        <span class="material-symbols-outlined text-[14px] mt-0.5">location_on</span>
+                        <span>
+                          {{ address.street_address }}<br/>
+                          {{ address.city }}, {{ address.state }} {{ address.postal_code }}<br/>
+                          {{ address.country }}
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+
+                  <div class="flex items-center md:flex-col gap-2 md:self-stretch justify-end md:justify-start pt-3 md:pt-0 border-t md:border-t-0 border-outline">
+                    <button
+                      type="button"
+                      (click)="openEditModal(address)"
+                      class="p-2 text-on-surface-variant hover:text-primary hover:bg-surface rounded-lg transition-all flex items-center justify-center"
+                      title="Edit Address"
+                    >
+                      <span class="material-symbols-outlined text-[18px]">edit</span>
+                    </button>
+                    <button
+                      type="button"
+                      (click)="deleteAddress(address.id)"
+                      class="p-2 text-on-surface-variant hover:text-error hover:bg-error-bg rounded-lg transition-all flex items-center justify-center"
+                      title="Delete Address"
+                    >
+                      <span class="material-symbols-outlined text-[18px]">delete</span>
+                    </button>
+                    @if (!address.is_default) {
+                      <button
+                        type="button"
+                        (click)="setDefaultAddress(address.id)"
+                        class="text-[10px] font-extrabold uppercase tracking-widest text-primary hover:underline p-2"
+                      >
+                        Set Default
+                      </button>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
 
     </div>
   </div>
 </div>
+
+<!-- Address Add/Edit Modal -->
+@if (showAddressModal()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+    <div class="w-full max-w-lg p-6 bg-surface-container rounded-2xl border border-outline shadow-2xl animate-scale-in">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-xl font-bold text-on-surface">
+          {{ editingAddressId() ? 'Edit Address' : 'Add New Address' }}
+        </h3>
+        <button type="button" (click)="closeAddressModal()" class="text-on-surface-variant hover:text-primary transition-colors flex items-center justify-center">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <form [formGroup]="addressForm" (ngSubmit)="saveAddress()" class="space-y-4" novalidate>
+        <div class="grid grid-cols-2 gap-4">
+          <div class="space-y-1">
+            <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider">Address Title</label>
+            <input type="text" formControlName="address_title" placeholder="e.g. Home, Work" class="w-full px-4 py-2.5 bg-surface-container-low rounded-xl border border-outline text-sm font-medium text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all" />
+            @if (addressForm.get('address_title')?.hasError('required') && addressForm.get('address_title')?.touched) {
+              <span class="text-[10px] font-bold text-error">Title is required.</span>
+            }
+          </div>
+          <div class="space-y-1">
+            <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider">Recipient Name</label>
+            <input type="text" formControlName="recipient_name" placeholder="John Doe" class="w-full px-4 py-2.5 bg-surface-container-low rounded-xl border border-outline text-sm font-medium text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all" />
+            @if (addressForm.get('recipient_name')?.hasError('required') && addressForm.get('recipient_name')?.touched) {
+              <span class="text-[10px] font-bold text-error">Name is required.</span>
+            }
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div class="space-y-1">
+            <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider">Recipient Phone</label>
+            <input type="text" formControlName="recipient_phone" placeholder="e.g. 01234567890" class="w-full px-4 py-2.5 bg-surface-container-low rounded-xl border border-outline text-sm font-medium text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all" />
+            @if (addressForm.get('recipient_phone')?.hasError('required') && addressForm.get('recipient_phone')?.touched) {
+              <span class="text-[10px] font-bold text-error">Phone is required.</span>
+            }
+            @if (addressForm.get('recipient_phone')?.hasError('pattern') && addressForm.get('recipient_phone')?.touched) {
+              <span class="text-[10px] font-bold text-error">Invalid phone format.</span>
+            }
+          </div>
+          <div class="space-y-1">
+            <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider">Street Address</label>
+            <input type="text" formControlName="street_address" placeholder="123 Main St" class="w-full px-4 py-2.5 bg-surface-container-low rounded-xl border border-outline text-sm font-medium text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all" />
+            @if (addressForm.get('street_address')?.hasError('required') && addressForm.get('street_address')?.touched) {
+              <span class="text-[10px] font-bold text-error">Street is required.</span>
+            }
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div class="space-y-1">
+            <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider">City</label>
+            <input type="text" formControlName="city" placeholder="Cairo" class="w-full px-4 py-2.5 bg-surface-container-low rounded-xl border border-outline text-sm font-medium text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all" />
+            @if (addressForm.get('city')?.hasError('required') && addressForm.get('city')?.touched) {
+              <span class="text-[10px] font-bold text-error">City is required.</span>
+            }
+          </div>
+          <div class="space-y-1">
+            <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider">State / Region</label>
+            <input type="text" formControlName="state" placeholder="Cairo Governorate" class="w-full px-4 py-2.5 bg-surface-container-low rounded-xl border border-outline text-sm font-medium text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all" />
+            @if (addressForm.get('state')?.hasError('required') && addressForm.get('state')?.touched) {
+              <span class="text-[10px] font-bold text-error">State is required.</span>
+            }
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div class="space-y-1">
+            <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider">Postal / ZIP Code</label>
+            <input type="text" formControlName="postal_code" placeholder="12345" class="w-full px-4 py-2.5 bg-surface-container-low rounded-xl border border-outline text-sm font-medium text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all" />
+            @if (addressForm.get('postal_code')?.hasError('required') && addressForm.get('postal_code')?.touched) {
+              <span class="text-[10px] font-bold text-error">Postal code is required.</span>
+            }
+          </div>
+          <div class="space-y-1">
+            <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider">Country</label>
+            <input type="text" formControlName="country" placeholder="Egypt" class="w-full px-4 py-2.5 bg-surface-container-low rounded-xl border border-outline text-sm font-medium text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all" />
+            @if (addressForm.get('country')?.hasError('required') && addressForm.get('country')?.touched) {
+              <span class="text-[10px] font-bold text-error">Country is required.</span>
+            }
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 pt-2">
+          <input type="checkbox" id="addr-default" formControlName="is_default" class="w-4 h-4 text-primary focus:ring-primary border-outline rounded" />
+          <label for="addr-default" class="text-xs font-bold text-on-surface-variant uppercase tracking-wider select-none cursor-pointer">Set as default address</label>
+        </div>
+
+        <div class="flex gap-4 pt-4 border-t border-outline">
+          <button type="button" (click)="closeAddressModal()" class="flex-1 py-3 bg-surface hover:bg-surface-container border border-outline text-on-surface-variant hover:text-on-surface rounded-xl text-sm font-bold transition-all">Cancel</button>
+          <button type="submit" [disabled]="addressForm.invalid || isModalSaving()" class="flex-1 py-3 bg-primary hover:bg-primary-hover text-white rounded-xl text-sm font-bold shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50">
+            @if (isModalSaving()) {
+              <span class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+              Saving...
+            } @else {
+              <span>Save Address</span>
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

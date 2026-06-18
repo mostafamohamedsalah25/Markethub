@@ -4,7 +4,8 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from .models import SellerProfile
+from .models import SellerProfile, UserAddress
+
 
 User = get_user_model()
 
@@ -159,3 +160,11 @@ class SellerProfileSerializer(serializers.ModelSerializer):
 
     def get_total_orders(self, obj):
         return obj.received_orders.count()
+
+
+class UserAddressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserAddress
+        fields = ['id', 'street', 'city', 'country', 'postal_code', 'is_default', 'created_at']
+        read_only_fields = ['id', 'created_at']
+

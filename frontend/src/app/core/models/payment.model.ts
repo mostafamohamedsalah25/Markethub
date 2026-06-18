@@ -1,4 +1,4 @@
-export type PaymentProvider = 'mock' | 'stripe';
+export type PaymentProvider = 'mock' | 'stripe' | 'paypal';
 
 export type PaymentStatus = 'pending' | 'processing' | 'succeeded' | 'failed' | 'refunded';
 

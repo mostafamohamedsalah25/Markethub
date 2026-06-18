@@ -47,25 +47,6 @@ export class PaymentSuccessComponent implements OnInit {
   }
 
   private clearPendingOrders(): void {
-    const raw = sessionStorage.getItem('pending_order_ids');
-    if (!raw) return;
-    try {
-      const ids: number[] = JSON.parse(raw);
-      if (ids.length > 0) {
-        sessionStorage.setItem('pending_order_ids', JSON.stringify(ids));
-        return;
-      }
-    } catch { /* ignore */ }
     sessionStorage.removeItem('pending_order_ids');
-  }
-
-  hasMoreOrders(): boolean {
-    const raw = sessionStorage.getItem('pending_order_ids');
-    if (!raw) return false;
-    try {
-      return JSON.parse(raw).length > 0;
-    } catch {
-      return false;
-    }
   }
 }

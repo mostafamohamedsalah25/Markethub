@@ -19,6 +19,9 @@ def fulfill_order_on_payment(order: Order) -> None:
     """
     Decrement inventory and record promo usage once payment succeeds.
     Idempotent per order via inventory_fulfilled.
+
+    Callers must catch FulfillmentError and handle rejection/refund flows when
+    stock is no longer available at payment time.
     """
     order = Order.objects.select_for_update().get(pk=order.pk)
 

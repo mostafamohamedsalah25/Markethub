@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from .models import Category, Product, ProductImage, ProductReview, WishlistItem
-from orders.models import OrderItem
 
 class CategorySerializer(serializers.ModelSerializer):
     name = serializers.CharField(
@@ -79,8 +78,8 @@ class ProductSerializer(serializers.ModelSerializer):
         user = self.context['request'].user
         
         if not hasattr(user, 'seller_profile'):
-            from users.models import SellerProfile
-            SellerProfile.objects.create(user=user, store_name=f"{user.role.capitalize()} Store")
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("You must have a seller profile to add a product.")
             
         seller_profile = user.seller_profile
         # FormData may send is_active as empty string → False; always publish new products
@@ -99,19 +98,11 @@ class ProductSerializer(serializers.ModelSerializer):
 
 class ProductReviewSerializer(serializers.ModelSerializer):
     user_email = serializers.EmailField(source='user.email', read_only=True)
-    is_verified_purchase = serializers.SerializerMethodField()
 
     class Meta:
         model = ProductReview
         fields = ['id', 'product', 'user', 'user_email', 'rating', 'comment', 'is_verified_purchase', 'created_at']
-        read_only_fields = ['id', 'user', 'created_at']
-
-    def get_is_verified_purchase(self, obj):
-        return OrderItem.objects.filter(
-            order__buyer=obj.user,
-            product=obj.product,
-            order__status='delivered'
-        ).exists()
+        read_only_fields = ['id', 'user', 'is_verified_purchase', 'created_at']
 
 
 class WishlistItemSerializer(serializers.ModelSerializer):

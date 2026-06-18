@@ -26,6 +26,32 @@ class Module9Tests(TestCase):
         )
         self.client.force_authenticate(user=self.user)
 
+    def _mark_product_as_purchased(self, product: Product) -> None:
+        order = Order.objects.create(
+            buyer=self.user,
+            seller=product.seller,
+            total_amount=product.price,
+            status='delivered'
+        )
+        OrderItem.objects.create(
+            order=order,
+            product=product,
+            product_name=product.name,
+            price=product.price,
+            quantity=1
+        )
+
+    def _create_review(self, product: Product, rating: int) -> ProductReview:
+        self._mark_product_as_purchased(product)
+        review = ProductReview.objects.create(
+            user=self.user,
+            product=product,
+            rating=rating,
+            comment=f'{rating}-star review'
+        )
+        product.update_rating()
+        return review
+
     def test_add_to_wishlist(self):
         response = self.client.post('/api/products/wishlist/', {'product': self.product.id})
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -69,6 +95,7 @@ class Module9Tests(TestCase):
             'comment': 'Great!'
         })
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(response.data['is_verified_purchase'])
         
         # Check rating calculation
         self.product.refresh_from_db()
@@ -87,3 +114,42 @@ class Module9Tests(TestCase):
             'comment': 'Second'
         })
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_review_list_filters_by_product(self):
+        self._create_review(self.product, 5)
+        other_product = Product.objects.create(
+            seller=self.seller_profile,
+            category=self.category,
+            name='Phone',
+            slug='phone',
+            price=600.00,
+            stock=5
+        )
+        self._create_review(other_product, 4)
+
+        response = self.client.get(f'/api/products/reviews/?product={self.product.id}')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        reviews = response.data if isinstance(response.data, list) else response.data.get('results', [])
+        self.assertEqual(len(reviews), 1)
+        self.assertEqual(reviews[0]['product'], self.product.id)
+
+    def test_min_rating_filter_filters_products(self):
+        self._create_review(self.product, 5)
+        low_rating_product = Product.objects.create(
+            seller=self.seller_profile,
+            category=self.category,
+            name='Mouse',
+            slug='mouse',
+            price=25.00,
+            stock=15
+        )
+        self._create_review(low_rating_product, 2)
+
+        response = self.client.get('/api/products/?min_rating=4')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        products = response.data if isinstance(response.data, list) else response.data.get('results', [])
+        product_ids = {item['id'] for item in products}
+        self.assertIn(self.product.id, product_ids)
+        self.assertNotIn(low_rating_product.id, product_ids)

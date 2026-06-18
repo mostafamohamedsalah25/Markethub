@@ -20,9 +20,11 @@ class Payment(models.Model):
 
     PROVIDER_MOCK = 'mock'
     PROVIDER_STRIPE = 'stripe'
+    PROVIDER_PAYPAL = 'paypal'
     PROVIDER_CHOICES = (
         (PROVIDER_MOCK, 'Mock'),
         (PROVIDER_STRIPE, 'Stripe'),
+        (PROVIDER_PAYPAL, 'PayPal'),
     )
 
     order = models.ForeignKey(

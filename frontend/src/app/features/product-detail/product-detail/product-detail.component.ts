@@ -85,6 +85,7 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     this.notFound = false;
     this.product = null;
     this.relatedProducts = [];
+    this.reviews = [];
     this.quantity = 1;
 
     this.productService.getProductBySlug(slug).subscribe({

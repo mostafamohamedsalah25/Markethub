@@ -175,6 +175,39 @@ export class AuthService {
     );
   }
 
+  googleLogin(data: { token: string; role?: string; store_name?: string }): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.API_URL}/google/`, data).pipe(
+      tap((response) => {
+        if (response.data.access && response.data.refresh) {
+          this.tokenService.setTokens(response.data.access, response.data.refresh);
+          this.applyTokenPayload(response.data.access);
+          this.currentUser.update((u) =>
+            u
+              ? { ...u, email: response.data.user.email, role: response.data.user.role }
+              : {
+                  id: '',
+                  email: response.data.user.email,
+                  phone: null,
+                  role: response.data.user.role,
+                  is_verified: true,
+                  created_at: '',
+                },
+          );
+          this.isAuthenticated.set(true);
+          this.fetchProfile().subscribe();
+        }
+      }),
+    );
+  }
+
+  forgotPassword(email: string): Observable<unknown> {
+    return this.http.post(`${this.API_URL}/forgot-password/`, { email });
+  }
+
+  resetPassword(data: Record<string, string>): Observable<unknown> {
+    return this.http.post(`${this.API_URL}/reset-password/`, data);
+  }
+
   clearSession(): void {
     this.tokenService.clearTokens();
     this.currentUser.set(null);

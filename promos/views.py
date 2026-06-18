@@ -1,6 +1,7 @@
 from rest_framework import generics, permissions, status, views
 
 from orders.models import Cart
+from orders.serializers import CartSerializer
 from promos.models import PromoCode
 from promos.serializers import (
     PromoApplyRequestSerializer,
@@ -13,6 +14,15 @@ from users.mixins import ApiResponseMixin
 from users.permissions import IsAdmin
 
 
+def _get_cart_for_user(user):
+    cart, _ = Cart.objects.select_related('applied_promo').prefetch_related(
+        'items__product__seller',
+        'items__product__category',
+        'items__product__images',
+    ).get_or_create(user=user)
+    return cart
+
+
 class PromoValidateView(ApiResponseMixin, views.APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -21,7 +31,7 @@ class PromoValidateView(ApiResponseMixin, views.APIView):
         if not ser.is_valid():
             return self.error_response(message='Validation failed.', data=ser.errors)
 
-        cart, _ = Cart.objects.prefetch_related('items__product').get_or_create(user=request.user)
+        cart = _get_cart_for_user(request.user)
         if not cart.items.exists():
             return self.error_response(message='Cart is empty.')
 
@@ -42,7 +52,7 @@ class PromoApplyView(ApiResponseMixin, views.APIView):
         if not ser.is_valid():
             return self.error_response(message='Validation failed.', data=ser.errors)
 
-        cart, _ = Cart.objects.prefetch_related('items__product').get_or_create(user=request.user)
+        cart = _get_cart_for_user(request.user)
         if not cart.items.exists():
             return self.error_response(message='Cart is empty.')
 
@@ -60,6 +70,20 @@ class PromoApplyView(ApiResponseMixin, views.APIView):
         return self.success_response(
             data=serialize_promo_validation_result(result),
             message='Promo code applied to your cart.',
+        )
+
+
+class PromoRemoveView(ApiResponseMixin, views.APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        cart = _get_cart_for_user(request.user)
+        if cart.applied_promo_id is not None:
+            cart.applied_promo = None
+            cart.save(update_fields=['applied_promo', 'updated_at'])
+        return self.success_response(
+            data=CartSerializer(cart).data,
+            message='Promo code removed from your cart.',
         )
 
 

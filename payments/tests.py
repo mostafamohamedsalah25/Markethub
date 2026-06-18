@@ -21,7 +21,10 @@ User = get_user_model()
 
 def _make_catalog():
     seller_user = User.objects.create_user(email='seller1@test.com', password='pw123456', role='seller')
-    profile = SellerProfile.objects.create(user=seller_user, store_name='Store A')
+    profile, created = SellerProfile.objects.get_or_create(user=seller_user, defaults={'store_name': 'Store A'})
+    if not created:
+        profile.store_name = 'Store A'
+        profile.save()
     cat = Category.objects.create(name='Cat', slug='cat')
     product = Product.objects.create(
         seller=profile,
@@ -53,7 +56,7 @@ class PaymentFlowTests(TestCase):
             format='json',
         )
 
-    def test_successful_payment_marks_order_accepted(self):
+    def test_successful_payment_leaves_order_pending(self):
         r = self._checkout()
         self.assertEqual(r.status_code, status.HTTP_201_CREATED)
         order_id = r.json()[0]['id']
@@ -79,7 +82,7 @@ class PaymentFlowTests(TestCase):
         self.assertEqual(r3.json()['data']['status'], Payment.STATUS_SUCCEEDED)
 
         order = Order.objects.get(id=order_id)
-        self.assertEqual(order.status, 'accepted')
+        self.assertEqual(order.status, 'pending')
 
     def test_failed_payment_keeps_order_pending(self):
         r = self._checkout()
@@ -118,6 +121,27 @@ class PaymentFlowTests(TestCase):
         self.product.refresh_from_db()
         self.assertEqual(self.product.stock, stock_before - 2)
 
+    def test_insufficient_stock_rejects_order_and_refunds_payment(self):
+        r = self._checkout()
+        order_id = r.json()[0]['id']
+
+        self.client.post('/api/payments/create-intent/', {'order_id': order_id}, format='json')
+        pay = Payment.objects.get(order_id=order_id)
+
+        self.product.stock = 1
+        self.product.save(update_fields=['stock'])
+
+        r3 = self.client.post(
+            '/api/payments/verify/',
+            {'payment_id': pay.id, 'client_secret': pay.client_secret, 'simulate_outcome': 'succeeded'},
+            format='json',
+        )
+        self.assertEqual(r3.status_code, status.HTTP_200_OK)
+        self.assertEqual(r3.json()['data']['status'], Payment.STATUS_REFUNDED)
+
+        order = Order.objects.get(id=order_id)
+        self.assertEqual(order.status, 'rejected')
+
     def test_duplicate_intent_blocked_after_success(self):
         r = self._checkout()
         order_id = r.json()[0]['id']
@@ -133,6 +157,15 @@ class PaymentFlowTests(TestCase):
         r2 = self.client.post('/api/payments/create-intent/', {'order_id': order_id}, format='json')
         self.assertEqual(r2.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('already paid', r2.json()['message'].lower())
+
+    def test_create_intent_rejects_non_pending_orders(self):
+        r = self._checkout()
+        order_id = r.json()[0]['id']
+        Order.objects.filter(id=order_id).update(status='accepted')
+
+        r2 = self.client.post('/api/payments/create-intent/', {'order_id': order_id}, format='json')
+        self.assertEqual(r2.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('only pending orders can be paid', r2.json()['message'].lower())
 
     def test_history_lists_payments(self):
         self._checkout()
@@ -161,6 +194,8 @@ class PaymentFlowTests(TestCase):
         self.assertEqual(r2.status_code, status.HTTP_200_OK)
         pay.refresh_from_db()
         self.assertEqual(pay.status, Payment.STATUS_SUCCEEDED)
+        order = Order.objects.get(id=order_id)
+        self.assertEqual(order.status, 'pending')
 
     def test_webhook_rejects_bad_secret(self):
         r2 = self.client.post(
@@ -280,7 +315,12 @@ class StripeCheckoutTests(TestCase):
         )
         order_id = r.json()[0]['id']
 
-        r2 = self.client.post('/api/payments/create-intent/', {'order_id': order_id}, format='json')
+        # Explicit provider selection exercises the new strategy path.
+        r2 = self.client.post(
+            '/api/payments/create-intent/',
+            {'order_id': order_id, 'provider': 'stripe'},
+            format='json',
+        )
         self.assertEqual(r2.status_code, status.HTTP_201_CREATED)
         data = r2.json()['data']
         self.assertEqual(data['provider'], 'stripe')
@@ -307,7 +347,11 @@ class StripeCheckoutTests(TestCase):
             format='json',
         )
         order_id = r.json()[0]['id']
-        self.client.post('/api/payments/create-intent/', {'order_id': order_id}, format='json')
+        self.client.post(
+            '/api/payments/create-intent/',
+            {'order_id': order_id, 'provider': 'stripe'},
+            format='json',
+        )
         pay = Payment.objects.get(order_id=order_id)
 
         r3 = self.client.post(
@@ -317,3 +361,50 @@ class StripeCheckoutTests(TestCase):
         )
         self.assertEqual(r3.status_code, status.HTTP_200_OK)
         self.assertEqual(r3.json()['data']['status'], Payment.STATUS_SUCCEEDED)
+
+    @patch('payments.providers.stripe.stripe.Refund.create')
+    @patch('payments.providers.stripe.stripe.checkout.Session.retrieve')
+    @patch('payments.providers.stripe.stripe.checkout.Session.create')
+    def test_stripe_refund_runs_before_rejection(self, mock_create, mock_retrieve, mock_refund):
+        created = MagicMock()
+        created.id = 'cs_test_refund'
+        created.url = 'https://checkout.stripe.com/c/pay/cs_test_refund'
+        mock_create.return_value = created
+
+        session = MagicMock()
+        session.payment_status = 'paid'
+        session.status = 'complete'
+        mock_retrieve.return_value = session
+
+        refund = MagicMock()
+        refund.id = 're_test_123'
+        mock_refund.return_value = refund
+
+        self.client.force_authenticate(self.buyer)
+        r = self.client.post(
+            '/api/orders/checkout/',
+            {'shipping_address': '1 St', 'contact_phone': '+1'},
+            format='json',
+        )
+        order_id = r.json()[0]['id']
+
+        self.client.post(
+            '/api/payments/create-intent/',
+            {'order_id': order_id, 'provider': 'stripe'},
+            format='json',
+        )
+        pay = Payment.objects.get(order_id=order_id)
+
+        self.product.stock = 0
+        self.product.save(update_fields=['stock'])
+
+        r3 = self.client.post(
+            '/api/payments/verify/',
+            {'payment_id': pay.id, 'session_id': pay.transaction_id},
+            format='json',
+        )
+        self.assertEqual(r3.status_code, status.HTTP_200_OK)
+        self.assertEqual(r3.json()['data']['status'], Payment.STATUS_REFUNDED)
+        mock_refund.assert_called_once_with(payment_intent='cs_test_refund')
+        order = Order.objects.get(id=order_id)
+        self.assertEqual(order.status, 'rejected')

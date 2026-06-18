@@ -11,11 +11,15 @@ from .views import (
     AdminUserListView,
     AdminUserActivateView,
     GoogleLoginView,
-    SellerProfileViewSet
+    SellerProfileViewSet,
+    ForgotPasswordView,
+    ResetPasswordView,
+    UserAddressViewSet
 )
 
 router = DefaultRouter()
 router.register(r'seller-profiles', SellerProfileViewSet, basename='seller-profile')
+router.register(r'addresses', UserAddressViewSet, basename='address')
 
 urlpatterns = [
     # Auth
@@ -27,11 +31,13 @@ urlpatterns = [
     path('auth/verify-email/<str:token>/', VerifyEmailView.as_view(), name='verify_email'),
     path('auth/resend-verification/', ResendVerificationView.as_view(), name='resend_verification'),
     path('auth/google/', GoogleLoginView.as_view(), name='google_login'),
+    path('auth/forgot-password/', ForgotPasswordView.as_view(), name='forgot_password'),
+    path('auth/reset-password/', ResetPasswordView.as_view(), name='reset_password'),
     
     # Admin
     path('admin/users/', AdminUserListView.as_view(), name='admin_user_list'),
     path('admin/users/<uuid:id>/activate/', AdminUserActivateView.as_view(), name='admin_user_activate'),
     
-    # Profiles
+    # Profiles & Addresses
     path('', include(router.urls)),
 ]

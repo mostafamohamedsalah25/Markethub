@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { map, Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiEnvelope } from '../models/api-envelope.model';
-import { PaymentRecord } from '../models/payment.model';
+import { PaymentProvider, PaymentRecord } from '../models/payment.model';
 
 @Injectable({ providedIn: 'root' })
 export class PaymentService {
@@ -16,9 +16,12 @@ export class PaymentService {
     );
   }
 
-  createIntent(orderId: number): Observable<PaymentRecord> {
+  createIntent(orderId: number, provider: PaymentProvider = 'mock'): Observable<PaymentRecord> {
     return this.http
-      .post<ApiEnvelope<PaymentRecord>>(`${this.base}/create-intent/`, { order_id: orderId })
+      .post<ApiEnvelope<PaymentRecord>>(`${this.base}/create-intent/`, {
+        order_id: orderId,
+        provider,
+      })
       .pipe(map((res) => res.data));
   }
 

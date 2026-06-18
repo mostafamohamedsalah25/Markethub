@@ -89,7 +89,7 @@
                     <select [ngModel]="o.status" (change)="updateStatus(o, $any($event.target).value)"
                             class="w-full appearance-none pl-4 pr-8 py-2 rounded-xl text-[11px] font-extrabold uppercase tracking-widest border outline-none cursor-pointer transition-all shadow-sm"
                             [ngClass]="orderStatusClass(o.status)">
-                      @for (st of statusOptions; track st) {
+                      @for (st of availableStatuses(o); track st) {
                         <option [value]="st" class="font-bold text-on-surface bg-surface">{{ st }}</option>
                       }
                     </select>

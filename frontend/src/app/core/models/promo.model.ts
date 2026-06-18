@@ -1,5 +1,14 @@
 export type PromoDiscountType = 'percentage' | 'fixed';
 
+export interface PromoValidationResult {
+  valid: boolean;
+  code: string;
+  discount_amount: string;
+  message: string;
+  subtotal: string;
+  total_after_discount: string;
+}
+
 export interface PromoCode {
   id: number;
   code: string;
@@ -18,10 +27,10 @@ export interface PromoCode {
 export interface PromoPayload {
   code: string;
   discount_type: PromoDiscountType;
-  value: string;
+  value: number;
   is_active: boolean;
   max_uses?: number | null;
   starts_at?: string | null;
   expires_at?: string | null;
-  minimum_order_amount: string;
+  minimum_order_amount: number;
 }

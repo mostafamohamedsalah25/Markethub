@@ -79,6 +79,13 @@ export class CatalogComponent implements OnInit, OnDestroy {
     rating: false
   };
 
+  readonly ratingFilters = [
+    { value: 5, label: '5 Stars' },
+    { value: 4, label: '4 Stars & Up' },
+    { value: 3, label: '3 Stars & Up' },
+    { value: 2, label: '2 Stars & Up' },
+  ];
+
   toggleFilter(section: 'categories' | 'price' | 'availability' | 'rating'): void {
     this.filtersOpen[section] = !this.filtersOpen[section];
   }
@@ -88,6 +95,7 @@ export class CatalogComponent implements OnInit, OnDestroy {
   selectedCategory: string | null = null;
   minPrice: number | null = null;
   maxPrice: number | null = null;
+  minRating: number | null = null;
   availability: boolean | null = null;
   ordering = this.configService.catalogConfig.defaultOrdering;
 
@@ -135,6 +143,7 @@ export class CatalogComponent implements OnInit, OnDestroy {
       this.selectedCategory = params['category'] || null;
       this.minPrice = params['min_price'] ? +params['min_price'] : null;
       this.maxPrice = params['max_price'] ? +params['max_price'] : null;
+      this.minRating = params['min_rating'] ? +params['min_rating'] : null;
       this.availability = params['availability'] === 'true' ? true : null;
       this.ordering = params['ordering'] || '-created_at';
       this.page = params['page'] ? +params['page'] : 1;
@@ -194,11 +203,11 @@ export class CatalogComponent implements OnInit, OnDestroy {
     if (this.selectedCategory) params.category = this.selectedCategory;
     if (this.minPrice !== null) params.min_price = this.minPrice;
     if (this.maxPrice !== null) params.max_price = this.maxPrice;
+    if (this.minRating !== null) params.min_rating = this.minRating;
     if (this.availability !== null) params.availability = this.availability;
 
     this.productService.getProducts(params).subscribe({
       next: (res: any) => {
-        this.totalPages = Math.ceil(this.totalCount / this.pageSize);
         if (Array.isArray(res)) {
           // Flat array response (no pagination from backend)
           this.totalCount = res.length;
@@ -211,6 +220,7 @@ export class CatalogComponent implements OnInit, OnDestroy {
           this.products = res.results || [];
           this.totalCount = res.count || 0;
         }
+        this.totalPages = Math.ceil(this.totalCount / this.pageSize);
         this.isLoading = false;
         this.cdr.markForCheck();
       },
@@ -235,6 +245,13 @@ export class CatalogComponent implements OnInit, OnDestroy {
     this.updateUrlParams({
       min_price: this.minPrice,
       max_price: this.maxPrice,
+      page: null
+    });
+  }
+
+  onRatingChange(rating: number | null): void {
+    this.updateUrlParams({
+      min_rating: rating,
       page: null
     });
   }
@@ -320,4 +337,3 @@ export class CatalogComponent implements OnInit, OnDestroy {
     (event.target as HTMLImageElement).src = this.configService.catalogConfig.placeholders.productImage;
   }
 }
-

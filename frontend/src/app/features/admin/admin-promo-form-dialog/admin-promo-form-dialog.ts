@@ -38,25 +38,41 @@ export class AdminPromoFormDialogComponent {
     expires_at: [this.data.promo?.expires_at ? this.data.promo.expires_at.slice(0, 16) : ''],
   });
 
+  private toNumberOrNull(value: unknown): number | null {
+    if (value === null || value === undefined || value === '') {
+      return null;
+    }
+    const parsed = typeof value === 'number' ? value : Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+
   save(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
     }
     const v = this.form.getRawValue();
-    const maxUsesRaw = v.max_uses?.trim();
+    const value = this.toNumberOrNull(v.value);
+    const minimumOrderAmount = this.toNumberOrNull(v.minimum_order_amount);
+    const maxUses = this.toNumberOrNull(v.max_uses);
+
+    if (value === null || minimumOrderAmount === null) {
+      this.ui.showInfo('Please enter valid numeric values.');
+      return;
+    }
+
     const payload = {
       code: v.code.trim(),
       discount_type: v.discount_type as PromoDiscountType,
-      value: v.value,
+      value,
       is_active: v.is_active,
-      max_uses: maxUsesRaw === '' ? null : parseInt(maxUsesRaw, 10),
-      minimum_order_amount: v.minimum_order_amount,
+      max_uses: maxUses,
+      minimum_order_amount: minimumOrderAmount,
       starts_at: v.starts_at ? new Date(v.starts_at).toISOString() : null,
       expires_at: v.expires_at ? new Date(v.expires_at).toISOString() : null,
     };
 
-    if (payload.discount_type === 'percentage' && parseFloat(payload.value) > 100) {
+    if (payload.discount_type === 'percentage' && payload.value > 100) {
       this.ui.showInfo('Percentage cannot exceed 100.');
       return;
     }

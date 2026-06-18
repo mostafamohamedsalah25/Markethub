@@ -18,6 +18,7 @@ export class ProductService {
     category?: string;
     min_price?: number;
     max_price?: number;
+    min_rating?: number;
     availability?: boolean;
     search?: string;
     page?: number;

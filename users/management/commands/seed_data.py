@@ -289,6 +289,17 @@ class Command(BaseCommand):
                 'fulfill': False,
                 'days_ago': 1,
             },
+            # cancelled by customer before payment
+            {
+                'buyer': buyer,
+                'seller': seller2,
+                'product': self._product_by_slug(products, 'trail-running-backpack'),
+                'qty': 1,
+                'status': 'cancelled',
+                'payment_status': None,
+                'fulfill': False,
+                'days_ago': 1,
+            },
             # accepted + succeeded (seller1) — spread dates for charts
             {
                 'buyer': buyer,
@@ -361,6 +372,17 @@ class Command(BaseCommand):
                 'payment_status': Payment.STATUS_SUCCEEDED,
                 'fulfill': True,
                 'days_ago': 3,
+            },
+            # rejected after payment success would be refunded in production
+            {
+                'buyer': buyer2,
+                'seller': seller1,
+                'product': self._product_by_slug(products, 'vintage-film-camera'),
+                'qty': 1,
+                'status': 'rejected',
+                'payment_status': Payment.STATUS_REFUNDED,
+                'fulfill': False,
+                'days_ago': 5,
             },
             # processing payment
             {

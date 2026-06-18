@@ -153,16 +153,31 @@
         </button>
         
         @if (filtersOpen.rating) {
-          <div class="animate-fade-in pt-3 space-y-3">
-            @for (rating of [5, 4, 3, 2, 1]; track rating) {
-              <label class="flex items-center gap-3 cursor-pointer group">
-                <input (change)="showComingSoon('Rating Filter')" type="radio" name="rating" [value]="rating"
-                  class="appearance-none w-4 h-4 border-2 border-outline rounded-full checked:border-[5px] checked:border-primary transition-all cursor-pointer">
-                <app-star-rating [rating]="rating" [count]="0"></app-star-rating>
-                <span class="text-on-surface-variant text-xs font-semibold ml-1 group-hover:text-on-surface">
-                  {{ rating === 5 ? '5.0' : rating + '.0 & up' }}
-                </span>
-              </label>
+          <div class="animate-fade-in pt-3 space-y-2">
+            <button
+              type="button"
+              (click)="onRatingChange(null)"
+              [class.border-primary]="minRating === null"
+              [class.bg-primary-container]="minRating === null"
+              [class.text-primary]="minRating === null"
+              class="w-full rounded-2xl border px-4 py-3 text-left transition-all hover:border-primary/60 hover:bg-surface-container-low">
+              <span class="block text-xs font-extrabold uppercase tracking-widest">All Ratings</span>
+              <span class="block text-[11px] font-medium text-on-surface-variant mt-1">Show every product</span>
+            </button>
+
+            @for (ratingOption of ratingFilters; track ratingOption.value) {
+              <button
+                type="button"
+                (click)="onRatingChange(ratingOption.value)"
+                [class.border-primary]="minRating === ratingOption.value"
+                [class.bg-primary-container]="minRating === ratingOption.value"
+                [class.text-primary]="minRating === ratingOption.value"
+                class="w-full rounded-2xl border border-outline bg-surface-container-low px-4 py-3 text-left transition-all hover:border-primary/60 hover:bg-surface-container">
+                <div class="flex items-center justify-between gap-3">
+                  <app-star-rating [rating]="ratingOption.value" [count]="0"></app-star-rating>
+                  <span class="text-[11px] font-extrabold uppercase tracking-widest">{{ ratingOption.label }}</span>
+                </div>
+              </button>
             }
           </div>
         }

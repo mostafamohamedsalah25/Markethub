@@ -1,4 +1,3 @@
-from django.conf import settings
 from rest_framework import serializers
 
 from payments.models import Payment
@@ -47,6 +46,11 @@ class PaymentHistorySerializer(PaymentSerializer):
 
 class CreateIntentSerializer(serializers.Serializer):
     order_id = serializers.IntegerField(min_value=1)
+    provider = serializers.ChoiceField(
+        choices=Payment.PROVIDER_CHOICES,
+        required=False,
+        default=Payment.PROVIDER_MOCK,
+    )
 
 
 class VerifyPaymentSerializer(serializers.Serializer):
@@ -64,10 +68,11 @@ class VerifyPaymentSerializer(serializers.Serializer):
             raise serializers.ValidationError(
                 'Either client_secret or session_id is required.',
             )
-        provider = (getattr(settings, 'PAYMENT_PROVIDER', None) or 'mock').lower()
-        if attrs.get('simulate_outcome') and not settings.DEBUG and provider != 'mock':
+        from django.conf import settings
+
+        if attrs.get('simulate_outcome') and not settings.DEBUG:
             raise serializers.ValidationError(
-                {'simulate_outcome': 'Simulation is only available with the mock payment provider.'}
+                {'simulate_outcome': 'Simulation is only available in debug mode.'}
             )
         return attrs
 

@@ -1,9 +1,18 @@
 from decimal import Decimal
+import re
 
+from django.core.validators import RegexValidator
 from rest_framework import serializers
 
 from promos.models import PromoCode
 from promos.services import PromoValidationResult
+
+
+PROMO_CODE_VALIDATOR = RegexValidator(
+    regex=r'^[A-Z0-9]+$',
+    flags=re.IGNORECASE,
+    message='Code must contain only alphanumeric characters.',
+)
 
 
 class PromoValidationResultSerializer(serializers.Serializer):
@@ -31,6 +40,11 @@ def serialize_promo_validation_result(result: PromoValidationResult) -> dict:
 
 
 class PromoCodeSerializer(serializers.ModelSerializer):
+    code = serializers.CharField(
+        max_length=64,
+        validators=[PROMO_CODE_VALIDATOR],
+    )
+
     class Meta:
         model = PromoCode
         fields = [
@@ -53,6 +67,7 @@ class PromoCodeSerializer(serializers.ModelSerializer):
         v = (value or '').strip().upper()
         if not v:
             raise serializers.ValidationError('Code cannot be empty.')
+        PROMO_CODE_VALIDATOR(v)
         return v
 
     def validate_value(self, value: Decimal) -> Decimal:
@@ -73,20 +88,22 @@ class PromoCodeSerializer(serializers.ModelSerializer):
 
 
 class PromoValidateRequestSerializer(serializers.Serializer):
-    code = serializers.CharField(max_length=64)
+    code = serializers.CharField(max_length=64, validators=[PROMO_CODE_VALIDATOR])
 
     def validate_code(self, value: str) -> str:
         v = (value or '').strip().upper()
         if not v:
             raise serializers.ValidationError('Code cannot be empty.')
+        PROMO_CODE_VALIDATOR(v)
         return v
 
 
 class PromoApplyRequestSerializer(serializers.Serializer):
-    code = serializers.CharField(max_length=64)
+    code = serializers.CharField(max_length=64, validators=[PROMO_CODE_VALIDATOR])
 
     def validate_code(self, value: str) -> str:
         v = (value or '').strip().upper()
         if not v:
             raise serializers.ValidationError('Code cannot be empty.')
+        PROMO_CODE_VALIDATOR(v)
         return v

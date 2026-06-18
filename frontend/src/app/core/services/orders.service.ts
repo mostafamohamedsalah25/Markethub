@@ -13,7 +13,13 @@ export interface CartItem {
 export interface Cart {
   id: number;
   items: CartItem[];
+  applied_promo?: number | null;
+  applied_promo_code?: string | null;
+  subtotal?: string;
+  promo_discount?: string;
+  total_after_promo?: string;
   total_price: string;
+  created_at?: string;
 }
 
 export interface OrderItem {
@@ -70,6 +76,10 @@ export class OrdersService {
 
   getSellerOrders(): Observable<Order[]> {
     return this.http.get<Order[]>(`${this.apiUrl}/seller-orders/`);
+  }
+
+  cancelOrder(orderId: number): Observable<Order> {
+    return this.http.patch<Order>(`${this.apiUrl}/my-orders/${orderId}/cancel/`, {});
   }
 
   updateOrderStatus(orderId: number, status: string): Observable<Order> {

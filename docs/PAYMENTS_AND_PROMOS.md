@@ -24,8 +24,9 @@ Existing variables (`SECRET_KEY`, `DATABASE_URL`, `FRONTEND_URL`, email, Redis, 
    Response includes `client_secret` and `transaction_id` (mock-shaped, Stripe-ready field names).
 3. **Confirm** — `POST /api/payments/verify/` with `payment_id`, `client_secret`, and optional `simulate_outcome`:  
    `succeeded` | `failed` | `processing` | `pending` | `random`.
-4. **Success** → `Payment.status = succeeded`, `Order.status = accepted`.  
+4. **Success** → `Payment.status = succeeded`, inventory is fulfilled, and `Order.status` stays `pending` unless fulfillment fails.  
    **Failed** → payment failed, order stays `pending`.
+   If fulfillment fails because stock is no longer available, the order is marked `rejected` and the payment is refunded.
 5. **Webhook simulation** — `POST /api/payments/simulate-webhook/` with header  
    `X-Payment-Webhook-Secret: <PAYMENT_WEBHOOK_SECRET>` and JSON  
    `{ "transaction_id": "<txn>", "event": "succeeded" | "failed" | "refunded" }`.

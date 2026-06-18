@@ -52,9 +52,17 @@ class MockPaymentProvider(BasePaymentProvider):
 
     def parse_webhook_payload(self, payload: dict[str, Any]) -> tuple[str, str]:
         event = (payload.get('event') or payload.get('type') or '').lower()
+        data = payload.get('data', {}) or {}
+        obj = data.get('object', {}) if isinstance(data, dict) else {}
         txn = payload.get('transaction_id') or payload.get('id') or ''
+        if isinstance(obj, dict):
+            txn = txn or obj.get('id', '') or obj.get('payment_intent', '') or ''
         if event in ('payment.succeeded', 'succeeded', 'success'):
             return 'succeeded', txn
         if event in ('payment.failed', 'failed', 'failure'):
             return 'failed', txn
-        return 'failed', txn
+        return 'ignored', txn
+
+    def refund_payment(self, *, transaction_id: str, amount: Decimal) -> str:
+        _ = amount
+        return f'mock_ref_{transaction_id}_{uuid.uuid4().hex[:12]}'

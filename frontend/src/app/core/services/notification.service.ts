@@ -17,7 +17,7 @@ export interface Notification {
 })
 export class NotificationService {
     private http = inject(HttpClient);
-    private apiUrl = `${environment.apiUrl}/notifications/notifications/`;
+    private apiUrl = `${environment.apiUrl}/notifications/`;
 
     private _notifications = signal<Notification[]>([]);
     notifications = this._notifications.asReadonly();
@@ -29,33 +29,36 @@ export class NotificationService {
     fetchNotifications(): void {
         this.getNotifications().subscribe({
             next: (res: any) => {
-                const results = Array.isArray(res) ? res : (res.results || []);
+                const data = res.data || res;
+                const results = Array.isArray(data) ? data : (data.results || []);
                 this._notifications.set(results);
             }
         });
     }
 
-    getNotifications(): Observable<Notification[] | { results: Notification[] }> {
-        return this.http.get<Notification[] | { results: Notification[] }>(this.apiUrl);
+    getNotifications(): Observable<any> {
+        return this.http.get<any>(this.apiUrl);
     }
 
     markAsRead(id: number): Observable<any> {
+        // Optimistic Update: Update signals locally before the API responds
+        this._notifications.update(list =>
+            list.map(n => n.id === id ? { ...n, is_read: true } : n)
+        );
+
         return this.http.post(`${this.apiUrl}${id}/mark_as_read/`, {}).pipe(
-            tap(() => {
-                this._notifications.update(list =>
-                    list.map(n => n.id === id ? { ...n, is_read: true } : n)
-                );
-            })
+            tap(() => { /* API success */ })
         );
     }
 
     markAllAsRead(): Observable<any> {
+        // Optimistic Update: Update all signals locally before the API responds
+        this._notifications.update(list =>
+            list.map(n => ({ ...n, is_read: true }))
+        );
+
         return this.http.post(`${this.apiUrl}mark_all_as_read/`, {}).pipe(
-            tap(() => {
-                this._notifications.update(list =>
-                    list.map(n => ({ ...n, is_read: true }))
-                );
-            })
+            tap(() => { /* API success */ })
         );
     }
 }

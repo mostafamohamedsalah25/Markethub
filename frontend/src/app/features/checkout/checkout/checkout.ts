@@ -5,6 +5,8 @@ import { Router, RouterLink } from '@angular/router';
 import { OrdersService, Cart, CartItem, Order } from '../../../core/services/orders.service';
 import { PaymentService } from '../../../core/services/payment.service';
 import { UiService } from '../../../core/services/ui.service';
+import { UserAddressService, UserAddress } from '../../../core/services/address.service';
+import { PaymentProvider } from '../../../core/models/payment.model';
 
 @Component({
   selector: 'app-checkout',
@@ -15,11 +17,15 @@ import { UiService } from '../../../core/services/ui.service';
 export class CheckoutComponent implements OnInit {
   private ordersService = inject(OrdersService);
   private paymentService = inject(PaymentService);
+  private addressService = inject(UserAddressService);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
   private uiService = inject(UiService);
 
   cart: Cart | null = null;
+  addresses: UserAddress[] = [];
+  selectedAddressId: string | null = null;
+  
   shippingAddress = '';
   streetAddress = '';
   city = '';
@@ -28,9 +34,49 @@ export class CheckoutComponent implements OnInit {
   contactPhone = '';
   loading = true;
   processing = false;
+  selectedProvider: PaymentProvider = 'stripe';
+  readonly paymentMethods: Array<{
+    value: PaymentProvider;
+    title: string;
+    description: string;
+    icon: string;
+  }> = [
+    {
+      value: 'stripe',
+      title: 'Stripe / Card',
+      description: 'Fast card checkout with hosted payment pages.',
+      icon: 'credit_card',
+    },
+    {
+      value: 'paypal',
+      title: 'PayPal',
+      description: 'Use the PayPal strategy path for this order.',
+      icon: 'account_balance_wallet',
+    },
+    {
+      value: 'mock',
+      title: 'Mock / Test',
+      description: 'Developer simulation without a real gateway redirect.',
+      icon: 'science',
+    },
+  ];
+
 
   ngOnInit(): void {
     this.loading = true;
+    
+    this.addressService.getAddresses().subscribe({
+      next: (addrList) => {
+        this.addresses = addrList;
+        const defaultAddr = addrList.find((a) => a.is_default);
+        if (defaultAddr) {
+          this.selectAddress(defaultAddr);
+        }
+        this.cdr.markForCheck();
+      },
+      error: () => {}
+    });
+
     this.ordersService.getCart().subscribe({
       next: (data) => {
         this.cart = data;
@@ -46,6 +92,16 @@ export class CheckoutComponent implements OnInit {
         this.router.navigate(['/cart']);
       },
     });
+  }
+
+  selectAddress(address: UserAddress): void {
+    this.selectedAddressId = address.id;
+    this.streetAddress = address.street_address;
+    this.city = address.city;
+    this.postalCode = address.postal_code;
+    this.country = address.country;
+    this.contactPhone = address.recipient_phone;
+    this.cdr.markForCheck();
   }
 
   lineTotal(item: CartItem): string {
@@ -74,12 +130,6 @@ export class CheckoutComponent implements OnInit {
           this.uiService.showInfo('No orders were created.');
           return;
         }
-        if (orders.length > 1) {
-          sessionStorage.setItem(
-            'pending_order_ids',
-            JSON.stringify(orders.slice(1).map((o) => o.id)),
-          );
-        }
         this.startPayment(orders[0]);
       },
       error: (err) => {
@@ -95,10 +145,15 @@ export class CheckoutComponent implements OnInit {
     this.processing = true;
     this.cdr.markForCheck();
     
-    this.paymentService.createIntent(order.id).subscribe({
+    this.paymentService.createIntent(order.id, this.selectedProvider).subscribe({
       next: (payment) => {
         this.processing = false;
         this.cdr.markForCheck();
+        if (payment.status === 'succeeded') {
+          this.uiService.showInfo('Your order was completed successfully.');
+          this.router.navigate(['/my-orders']);
+          return;
+        }
         if (payment.checkout_url) {
           this.paymentService.startPayment(payment);
           return;

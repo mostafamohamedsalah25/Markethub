@@ -23,3 +23,22 @@ def send_verification_email(user_id, email):
         [email], 
         fail_silently=False
     )
+
+@shared_task
+def send_password_reset_email(user_id, email):
+    signer = TimestampSigner()
+    token = signer.sign(str(user_id))
+    
+    reset_url = f"{settings.FRONTEND_URL}/reset-password/{token}"
+    
+    subject = 'Reset your password for MarketHub'
+    message = f'Please click the link below to reset your password:\n\n{reset_url}'
+    from_email = settings.DEFAULT_FROM_EMAIL
+    
+    send_mail(
+        subject,
+        message,
+        from_email,
+        [email],
+        fail_silently=False
+    )

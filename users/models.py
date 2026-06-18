@@ -81,3 +81,29 @@ class SellerProfile(models.Model):
 def create_seller_profile(sender, instance, created, **kwargs):
     if created and instance.role == 'seller':
         SellerProfile.objects.get_or_create(user=instance, defaults={'store_name': f"{instance.email}'s Store"})
+
+
+class UserAddress(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='addresses')
+    street = models.CharField(max_length=255)
+    city = models.CharField(max_length=100)
+    country = models.CharField(max_length=100)
+    postal_code = models.CharField(max_length=20)
+    is_default = models.BooleanField(default=False)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-is_default', '-created_at']
+
+    def __str__(self):
+        return f"{self.street}, {self.city}, {self.country}"
+
+    def save(self, *args, **kwargs):
+        if self.is_default:
+            # Set all other addresses of this user to is_default=False
+            UserAddress.objects.filter(user=self.user, is_default=True).exclude(pk=self.pk).update(is_default=False)
+        super().save(*args, **kwargs)
+

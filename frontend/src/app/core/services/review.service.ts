@@ -20,11 +20,8 @@ export class ReviewService {
     private http = inject(HttpClient);
     private apiUrl = `${environment.apiUrl}/products/reviews/`;
 
-    getReviews(productId?: string | number): Observable<ProductReview[] | { results: ProductReview[] }> {
-        let params = new HttpParams();
-        if (productId) {
-            params = params.append('product', productId.toString());
-        }
+    getReviews(productId: string | number): Observable<ProductReview[] | { results: ProductReview[] }> {
+        const params = new HttpParams().set('product', productId.toString());
         return this.http.get<ProductReview[] | { results: ProductReview[] }>(this.apiUrl, { params });
     }
 

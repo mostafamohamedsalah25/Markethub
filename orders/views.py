@@ -18,6 +18,8 @@ from .models import Cart, CartItem, Order, OrderItem
 from .serializers import (
     CartSerializer, CartItemSerializer, OrderSerializer, CheckoutSerializer
 )
+from payments.models import Payment
+from notifications.tasks import create_notification
 
 class CartView(generics.RetrieveAPIView):
     serializer_class = CartSerializer
@@ -25,7 +27,9 @@ class CartView(generics.RetrieveAPIView):
 
     def get_object(self):
         cart, _ = Cart.objects.prefetch_related(
-            'items__product',
+            'items__product__seller',
+            'items__product__category',
+            'items__product__images',
             'applied_promo',
         ).get_or_create(user=self.request.user)
         return cart
@@ -201,7 +205,11 @@ class BuyerOrdersListView(generics.ListAPIView):
         return (
             Order.objects.filter(buyer=self.request.user)
             .select_related('seller', 'buyer')
-            .prefetch_related('items__product')
+            .prefetch_related(
+                'items__product__seller',
+                'items__product__category',
+                'items__product__images',
+            )
             .order_by('-created_at')
         )
 
@@ -210,25 +218,65 @@ class SellerOrdersListView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        base = Order.objects.select_related('seller', 'buyer').prefetch_related('items__product')
+        base = Order.objects.select_related('seller', 'buyer').prefetch_related(
+            'items__product__seller',
+            'items__product__category',
+            'items__product__images',
+        )
         if self.request.user.role == 'admin':
             return base.order_by('-created_at')
         if self.request.user.role == 'seller' and hasattr(self.request.user, 'seller_profile'):
             return base.filter(seller=self.request.user.seller_profile).order_by('-created_at')
         return Order.objects.none()
 
+
+class BuyerOrderCancelView(views.APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    @transaction.atomic
+    def patch(self, request, pk):
+        try:
+            order = Order.objects.select_for_update().get(pk=pk, buyer=request.user)
+        except Order.DoesNotExist:
+            return Response({"error": "Order not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        if order.status != 'pending':
+            return Response(
+                {"error": "Only pending orders can be cancelled."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if order.payments.exclude(status__in=[Payment.STATUS_FAILED, Payment.STATUS_REFUNDED]).exists():
+            return Response(
+                {"error": "Orders with active or successful payments cannot be cancelled."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        order.status = 'cancelled'
+        order.save(update_fields=['status', 'updated_at'])
+
+        return Response(OrderSerializer(order).data, status=status.HTTP_200_OK)
+
 class SellerOrderStatusUpdateView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
 
+    def _seller_allowed_transition(self, current_status: str) -> set[str]:
+        return {
+            'pending': {'accepted'},
+            'accepted': {'shipped'},
+            'shipped': {'delivered'},
+        }.get(current_status, set())
+
+    @transaction.atomic
     def patch(self, request, pk):
         if request.user.role not in ('seller', 'admin'):
             return Response({"error": "Only sellers/admins can update orders."}, status=status.HTTP_403_FORBIDDEN)
             
         try:
             if request.user.role == 'admin':
-                order = Order.objects.get(id=pk)
+                order = Order.objects.select_for_update().get(id=pk)
             else:
-                order = Order.objects.get(id=pk, seller=request.user.seller_profile)
+                order = Order.objects.select_for_update().get(id=pk, seller=request.user.seller_profile)
         except Order.DoesNotExist:
             return Response({"error": "Order not found."}, status=status.HTTP_404_NOT_FOUND)
 
@@ -238,8 +286,24 @@ class SellerOrderStatusUpdateView(views.APIView):
         if new_status not in valid_statuses:
             return Response({"error": "Invalid status."}, status=status.HTTP_400_BAD_REQUEST)
 
+        if request.user.role == 'seller':
+            allowed = self._seller_allowed_transition(order.status)
+            if new_status not in allowed:
+                return Response(
+                    {"error": f"Invalid transition from {order.status} to {new_status}."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
         order.status = new_status
         order.save()
         
+        # Inform the buyer about the status change
+        create_notification.delay(
+            order.buyer.id,
+            "Order Status Updated",
+            f"Your order #{order.id} is now {new_status}.",
+            'order_status_update'
+        )
+
         serializer = OrderSerializer(order)
         return Response(serializer.data, status=status.HTTP_200_OK)

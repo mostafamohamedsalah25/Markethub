@@ -3,7 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { map, Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiEnvelope } from '../models/api-envelope.model';
-import { PromoCode, PromoPayload } from '../models/promo.model';
+import { PromoCode, PromoPayload, PromoValidationResult } from '../models/promo.model';
+import { Cart } from './orders.service';
 
 @Injectable({ providedIn: 'root' })
 export class PromoService {
@@ -26,5 +27,15 @@ export class PromoService {
 
   delete(id: number): Observable<void> {
     return this.http.delete<ApiEnvelope<unknown>>(`${this.base}/${id}/`).pipe(map(() => undefined));
+  }
+
+  apply(code: string): Observable<PromoValidationResult> {
+    return this.http
+      .post<ApiEnvelope<PromoValidationResult>>(`${this.base}/apply/`, { code })
+      .pipe(map((res) => res.data));
+  }
+
+  removeFromCart(): Observable<Cart> {
+    return this.http.post<ApiEnvelope<Cart>>(`${this.base}/remove/`, {}).pipe(map((res) => res.data));
   }
 }

@@ -50,8 +50,10 @@ class ProductViewSet(viewsets.ModelViewSet):
 
 
 class ProductReviewViewSet(viewsets.ModelViewSet):
-    queryset = ProductReview.objects.all()
+    queryset = ProductReview.objects.select_related('product', 'user')
     serializer_class = ProductReviewSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['product']
 
     def get_permissions(self):
         if self.action in ['create']:
@@ -78,7 +80,7 @@ class ProductReviewViewSet(viewsets.ModelViewSet):
         if not has_purchased:
             raise serializers.ValidationError("You can only review products you have purchased and received.")
 
-        instance = serializer.save(user=user)
+        instance = serializer.save(user=user, is_verified_purchase=True)
         instance.product.update_rating()
 
     def perform_update(self, serializer):
@@ -96,7 +98,11 @@ class WishlistItemViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return WishlistItem.objects.filter(user=self.request.user)
+        return WishlistItem.objects.filter(user=self.request.user).select_related(
+            'product',
+            'product__seller',
+            'product__category',
+        ).prefetch_related('product__images')
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)

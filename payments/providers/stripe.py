@@ -15,7 +15,7 @@ class StripePaymentProvider(BasePaymentProvider):
     def __init__(self) -> None:
         secret = getattr(settings, 'STRIPE_SECRET_KEY', '') or ''
         if not secret:
-            raise ValueError('STRIPE_SECRET_KEY is required when PAYMENT_PROVIDER=stripe.')
+            raise ValueError('STRIPE_SECRET_KEY is required when using the Stripe provider.')
         stripe.api_key = secret
 
     def create_payment_intent(
@@ -113,7 +113,12 @@ class StripePaymentProvider(BasePaymentProvider):
             pi = obj
             txn = pi.get('id', '') if isinstance(pi, dict) else ''
             return 'failed', txn
-        return 'failed', txn
+        return 'ignored', txn
+
+    def refund_payment(self, *, transaction_id: str, amount: Decimal) -> str:
+        _ = amount
+        refund = stripe.Refund.create(payment_intent=transaction_id)
+        return getattr(refund, 'id', '')
 
     @staticmethod
     def retrieve_open_session_url(transaction_id: str) -> str | None:

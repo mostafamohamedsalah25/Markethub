@@ -1,23 +1,29 @@
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { RouterModule, Router, RouterLink } from '@angular/router';
 import { OrdersService, Cart, CartItem } from '../../../core/services/orders.service';
+import { PromoService } from '../../../core/services/promo.service';
 import { UiService } from '../../../core/services/ui.service';
 
 @Component({
   selector: 'app-cart',
   standalone: true,
-  imports: [CommonModule, RouterModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterModule, RouterLink],
   templateUrl: './cart.html',
 })
 export class CartComponent implements OnInit {
   private ordersService = inject(OrdersService);
+  private promoService = inject(PromoService);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
   private ui = inject(UiService);
 
   cart: Cart | null = null;
   loading = true;
+  promoCode = '';
+  promoError = '';
+  promoLoading = false;
   
   // بنخزن فيه الـ IDs بتاعة المنتجات اللي بيتغير عددها دلوقتي عشان نوقف زرايرها ثواني
   updatingItems = new Set<number>(); 
@@ -37,6 +43,8 @@ export class CartComponent implements OnInit {
     this.ordersService.getCart().subscribe({
       next: (data) => {
         this.cart = data;
+        this.promoCode = data.applied_promo_code || this.promoCode;
+        this.promoError = '';
         if (showSpinner) this.loading = false;
         this.cdr.markForCheck();
       },
@@ -109,6 +117,58 @@ export class CartComponent implements OnInit {
 
   goToCheckout(): void {
     this.router.navigate(['/checkout']);
+  }
+
+  applyPromo(): void {
+    const code = this.promoCode.trim();
+    if (!code) {
+      this.promoError = 'Enter a promo code.';
+      this.ui.showError(this.promoError);
+      return;
+    }
+
+    this.promoLoading = true;
+    this.promoError = '';
+    this.cdr.markForCheck();
+
+    this.promoService.apply(code).subscribe({
+      next: (result) => {
+        this.promoLoading = false;
+        this.promoCode = '';
+        this.ui.showInfo(result.message);
+        this.loadCart(false);
+      },
+      error: (err) => {
+        this.promoLoading = false;
+        this.promoError = err.error?.message || 'Could not apply promo code.';
+        this.ui.showError(this.promoError);
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  removePromo(): void {
+    if (!this.cart?.applied_promo_code) return;
+
+    this.promoLoading = true;
+    this.promoError = '';
+    this.cdr.markForCheck();
+
+    this.promoService.removeFromCart().subscribe({
+      next: (cart) => {
+        this.promoLoading = false;
+        this.cart = cart;
+        this.promoCode = '';
+        this.ui.showInfo('Promo removed from cart.');
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.promoLoading = false;
+        this.promoError = err.error?.message || 'Could not remove promo code.';
+        this.ui.showError(this.promoError);
+        this.cdr.markForCheck();
+      },
+    });
   }
 
   lineTotal(item: CartItem): string {

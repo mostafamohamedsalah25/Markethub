@@ -3,6 +3,8 @@ from django.conf import settings
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import permissions, status, views
+from payments.models import Payment
+from payments.providers import get_payment_provider
 
 from payments.serializers import (
     CreateIntentSerializer,
@@ -13,7 +15,6 @@ from payments.serializers import (
 )
 from payments.services import (
     PaymentServiceError,
-    apply_stripe_webhook_event,
     apply_webhook_event,
     create_payment_intent,
     list_payments_for_account,
@@ -31,7 +32,11 @@ class PaymentCreateIntentView(ApiResponseMixin, views.APIView):
             return self.error_response(message='Validation failed.', data=ser.errors)
 
         try:
-            payment = create_payment_intent(user=request.user, order_id=ser.validated_data['order_id'])
+            payment = create_payment_intent(
+                user=request.user,
+                order_id=ser.validated_data['order_id'],
+                provider_name=ser.validated_data.get('provider'),
+            )
         except PaymentServiceError as e:
             code = status.HTTP_404_NOT_FOUND if e.code == 'not_found' else status.HTTP_400_BAD_REQUEST
             return self.error_response(message=e.message, data={'code': e.code}, status_code=code)
@@ -115,13 +120,30 @@ class PaymentSimulateWebhookView(ApiResponseMixin, views.APIView):
             return self.error_response(message='Validation failed.', data=ser.errors)
 
         try:
-            payment = apply_webhook_event(
-                transaction_id=ser.validated_data['transaction_id'],
-                event=ser.validated_data['event'],
+            payment = Payment.objects.only('provider').get(transaction_id=ser.validated_data['transaction_id'])
+            provider = get_payment_provider(payment.provider)
+            event_type, transaction_id = provider.parse_webhook_payload(
+                {
+                    'type': ser.validated_data['event'],
+                    'transaction_id': ser.validated_data['transaction_id'],
+                }
             )
+            if event_type == 'ignored':
+                return self.success_response(
+                    message='Event ignored.',
+                    data={'event': ser.validated_data['event']},
+                )
+            payment = apply_webhook_event(
+                transaction_id=transaction_id,
+                event=event_type,
+            )
+        except Payment.DoesNotExist:
+            return self.error_response(message='Payment not found.', data={'code': 'not_found'}, status_code=status.HTTP_404_NOT_FOUND)
         except PaymentServiceError as e:
             st = status.HTTP_404_NOT_FOUND if e.code == 'not_found' else status.HTTP_400_BAD_REQUEST
             return self.error_response(message=e.message, data={'code': e.code}, status_code=st)
+        except ValueError as e:
+            return self.error_response(message=str(e), status_code=status.HTTP_400_BAD_REQUEST)
 
         return self.success_response(
             data=PaymentSerializer(payment).data,
@@ -159,14 +181,14 @@ class StripeWebhookView(ApiResponseMixin, views.APIView):
                 status_code=status.HTTP_400_BAD_REQUEST,
             )
 
-        session = event.data.object
-        transaction_id = getattr(session, 'id', '') or ''
+        event_payload = event.to_dict_recursive() if hasattr(event, 'to_dict_recursive') else event
+        provider = get_payment_provider('stripe')
+        event_type, transaction_id = provider.parse_webhook_payload(event_payload)
+        if event_type == 'ignored':
+            return self.success_response(message='Event ignored.', data={'type': event.type})
 
         try:
-            payment = apply_stripe_webhook_event(
-                event_type=event.type,
-                transaction_id=transaction_id,
-            )
+            payment = apply_webhook_event(transaction_id=transaction_id, event=event_type)
         except PaymentServiceError as e:
             if e.code == 'unsupported_event':
                 return self.success_response(message='Event ignored.', data={'type': event.type})

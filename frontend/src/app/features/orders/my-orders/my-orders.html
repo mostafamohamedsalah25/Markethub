@@ -71,21 +71,40 @@
                 {{ order.status }}
               </span>
 
-              @if (order.status === 'pending') {
-                <button
-                  (click)="payOrder(order)"
-                  [disabled]="payingOrderId === order.id"
-                  class="mh-btn mh-btn-brand shadow-lg shadow-primary/20 animate-pulse"
-                >
-                  @if (payingOrderId === order.id) {
-                    <span class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                    Processing...
-                  } @else {
-                    <span class="material-symbols-outlined text-[18px]">payments</span>
-                    Pay Now
-                  }
-                </button>
+              @if (paymentForOrder(order.id)?.status) {
+                <span class="text-[10px] font-extrabold uppercase tracking-widest text-on-surface-variant">
+                  Payment: {{ paymentForOrder(order.id)?.status }}
+                </span>
               }
+
+              <div class="flex items-center gap-3 flex-wrap">
+                @if (canPay(order)) {
+                  <button
+                    (click)="payOrder(order)"
+                    [disabled]="payingOrderId === order.id"
+                    class="mh-btn mh-btn-brand shadow-lg shadow-primary/20 animate-pulse"
+                  >
+                    @if (payingOrderId === order.id) {
+                      <span class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                      Processing...
+                    } @else {
+                      <span class="material-symbols-outlined text-[18px]">payments</span>
+                      Pay Now
+                    }
+                  </button>
+                }
+
+                @if (canCancel(order)) {
+                  <button
+                    (click)="cancelOrder(order)"
+                    [disabled]="payingOrderId === order.id"
+                    class="mh-btn mh-btn-outline bg-surface border-2 border-outline hover:border-error hover:text-error"
+                  >
+                    <span class="material-symbols-outlined text-[18px]">cancel</span>
+                    Cancel Order
+                  </button>
+                }
+              </div>
             </div>
           </div>
 

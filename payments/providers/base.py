@@ -39,3 +39,9 @@ class BasePaymentProvider(ABC):
         Returns (event_type, transaction_id).
         event_type: succeeded | failed
         """
+
+    @abstractmethod
+    def refund_payment(self, *, transaction_id: str, amount: Decimal) -> str:
+        """
+        Issue a refund for the given transaction and return the refund reference.
+        """

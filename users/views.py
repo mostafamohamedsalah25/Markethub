@@ -8,18 +8,22 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError as DjangoValidationError
+
 from .serializers import (
     RegisterSerializer, 
     CustomTokenObtainPairSerializer, 
     UserProfileSerializer,
     AdminUserSerializer,
-    SellerProfileSerializer
+    SellerProfileSerializer,
+    UserAddressSerializer
 )
 from .permissions import IsAdmin
 from .tasks import send_verification_email
 from .mixins import ApiResponseMixin
 
-from .models import SellerProfile
+from .models import SellerProfile, UserAddress
 
 User = get_user_model()
 
@@ -27,6 +31,7 @@ class RegisterView(ApiResponseMixin, generics.CreateAPIView):
     queryset = User.objects.all()
     permission_classes = (permissions.AllowAny,)
     serializer_class = RegisterSerializer
+    throttle_scope = 'auth_attempt'
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -44,6 +49,7 @@ class RegisterView(ApiResponseMixin, generics.CreateAPIView):
 
 class LoginView(ApiResponseMixin, TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
+    throttle_scope = 'auth_attempt'
 
     def post(self, request, *args, **kwargs):
         response = super().post(request, *args, **kwargs)
@@ -115,6 +121,7 @@ class VerifyEmailView(ApiResponseMixin, views.APIView):
 
 class ResendVerificationView(ApiResponseMixin, views.APIView):
     permission_classes = (permissions.AllowAny,)
+    throttle_scope = 'auth_attempt'
 
     def post(self, request):
         email = request.data.get('email')
@@ -159,12 +166,18 @@ class AdminUserActivateView(ApiResponseMixin, views.APIView):
 
 class GoogleLoginView(ApiResponseMixin, views.APIView):
     permission_classes = (permissions.AllowAny,)
+    throttle_scope = 'auth_attempt'
 
     def post(self, request):
         # Support both 'token' and 'id_token' keys for flexibility
         token = request.data.get('token') or request.data.get('id_token')
         if not token:
             return self.error_response(message="Google token is required")
+
+        role = request.data.get('role', 'customer')
+        if role not in ['customer', 'seller']:
+            role = 'customer'
+        store_name = request.data.get('store_name')
 
         try:
             # Verify the ID token
@@ -183,10 +196,26 @@ class GoogleLoginView(ApiResponseMixin, views.APIView):
             user, created = User.objects.get_or_create(
                 email=email,
                 defaults={
-                    'role': 'customer',
+                    'role': role,
                     'is_verified': True, # Google emails are already verified
                 }
             )
+
+            if role == 'seller':
+                if created:
+                    SellerProfile.objects.get_or_create(
+                        user=user,
+                        defaults={'store_name': store_name or f"{user.email}'s Store"}
+                    )
+                else:
+                    # Upgrade role if needed or make sure they have a SellerProfile
+                    if not hasattr(user, 'seller_profile'):
+                        user.role = 'seller'
+                        user.save()
+                        SellerProfile.objects.create(
+                            user=user,
+                            store_name=store_name or f"{user.email}'s Store"
+                        )
 
             # Generate JWT tokens
             refresh = RefreshToken.for_user(user)
@@ -232,3 +261,74 @@ class SellerProfileViewSet(ApiResponseMixin, viewsets.ModelViewSet):
             serializer.save()
             return self.success_response(data=serializer.data, message="Seller profile updated successfully")
         return self.error_response(message="Update failed", data=serializer.errors)
+
+
+class ForgotPasswordView(ApiResponseMixin, views.APIView):
+    permission_classes = (permissions.AllowAny,)
+    throttle_scope = 'auth_attempt'
+
+    def post(self, request):
+        email = request.data.get('email')
+        if not email:
+            return self.error_response(message="Email is required")
+        
+        email = email.lower().strip()
+        try:
+            user = User.objects.get(email=email)
+            from .tasks import send_password_reset_email
+            send_password_reset_email.delay(user.id, user.email)
+        except User.DoesNotExist:
+            pass
+            
+        return self.success_response(
+            message="If an account exists with this email, a password reset link has been sent."
+        )
+
+
+class ResetPasswordView(ApiResponseMixin, views.APIView):
+    permission_classes = (permissions.AllowAny,)
+    throttle_scope = 'auth_attempt'
+
+    def post(self, request):
+        token = request.data.get('token')
+        password = request.data.get('password')
+        password_confirm = request.data.get('password_confirm')
+        
+        if not token or not password or not password_confirm:
+            return self.error_response(message="Token, password, and password confirmation are required")
+            
+        if password != password_confirm:
+            return self.error_response(message="Passwords do not match")
+            
+        try:
+            signer = TimestampSigner()
+            user_id = signer.unsign(token, max_age=3600)  # 1 hour expiration
+            user = User.objects.get(id=user_id)
+            
+            try:
+                validate_password(password, user)
+            except DjangoValidationError as e:
+                return self.error_response(message="Password validation failed", data={'errors': list(e.messages)})
+            
+            user.set_password(password)
+            user.save()
+            return self.success_response(message="Password reset successfully")
+            
+        except SignatureExpired:
+            return self.error_response(message="Reset link has expired")
+        except (BadSignature, User.DoesNotExist):
+            return self.error_response(message="Invalid or expired reset link")
+
+
+class UserAddressViewSet(ApiResponseMixin, viewsets.ModelViewSet):
+    serializer_class = UserAddressSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return UserAddress.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        is_default = serializer.validated_data.get('is_default', False)
+        if not self.get_queryset().exists():
+            is_default = True
+        serializer.save(user=self.request.user, is_default=is_default)

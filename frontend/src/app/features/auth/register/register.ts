@@ -8,16 +8,21 @@ import {
   Validators,
   AbstractControl,
   ValidationErrors,
+  FormsModule
 } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth';
 import { UiService } from '../../../core/services/ui.service';
+import { environment } from '../../../../environments/environment';
+
+declare var google: any;
 
 @Component({
   selector: 'app-register',
   imports: [
     CommonModule,
     ReactiveFormsModule,
+    FormsModule,
     RouterLink,
   ],
   templateUrl: './register.html',
@@ -35,6 +40,12 @@ export class RegisterComponent implements OnInit {
   successMessage = signal<string | null>(null);
   hidePassword = signal<boolean>(true);
   isSeller = signal<boolean>(false);
+
+  // Google OAuth properties
+  showRoleModal = signal<boolean>(false);
+  googleRole = signal<'customer' | 'seller'>('customer');
+  googleStoreName = signal<string>('');
+
 
   constructor() {
     this.registerForm = this.fb.nonNullable.group(
@@ -107,7 +118,76 @@ export class RegisterComponent implements OnInit {
     });
   }
 
+  startGoogleLogin(): void {
+    this.googleRole.set('customer');
+    this.googleStoreName.set('');
+    this.showRoleModal.set(true);
+  }
+
+  triggerGoogleAuth(): void {
+    this.showRoleModal.set(false);
+    this.isLoading.set(true);
+    this.errorMessage.set(null);
+
+    try {
+      google.accounts.id.initialize({
+        client_id: environment.googleClientId,
+        callback: (response: any) => this.handleGoogleCredentialResponse(response),
+      });
+
+      google.accounts.id.prompt((notification: any) => {
+        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+          const container = document.getElementById('google-btn-container');
+          if (container) {
+            google.accounts.id.renderButton(container, {
+              theme: 'outline',
+              size: 'large',
+              width: 320,
+            });
+            this.isLoading.set(false);
+            inject(UiService).showInfo('Please click the Google button to authenticate.');
+          } else {
+            this.isLoading.set(false);
+            this.errorMessage.set('Google authentication prompt failed to open.');
+          }
+        }
+      });
+    } catch (err) {
+      this.isLoading.set(false);
+      this.errorMessage.set('Google Identity SDK failed to load.');
+    }
+  }
+
+  handleGoogleCredentialResponse(response: any): void {
+    if (!response.credential) {
+      this.errorMessage.set('Google authentication failed.');
+      this.isLoading.set(false);
+      return;
+    }
+
+    this.isLoading.set(true);
+    this.authService.googleLogin({
+      token: response.credential,
+      role: this.googleRole(),
+      store_name: this.googleRole() === 'seller' ? this.googleStoreName().trim() : undefined,
+    }).subscribe({
+      next: (res) => {
+        this.isLoading.set(false);
+        const role = res.data.user.role;
+        if (role === 'admin') this.router.navigate(['/admin']);
+        else if (role === 'seller') this.router.navigate(['/seller']);
+        else this.router.navigate(['/']);
+      },
+      error: (err) => {
+        this.isLoading.set(false);
+        const msg = err.error?.message || err.error?.detail || 'Google Sign-In failed.';
+        this.errorMessage.set(typeof msg === 'string' ? msg : JSON.stringify(msg));
+      },
+    });
+  }
+
   showComingSoon(feature: string): void {
     inject(UiService).showComingSoon(feature);
   }
 }
+
